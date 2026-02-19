@@ -1,7 +1,7 @@
 <template>
     <v-app>
         <v-app-bar>
-            <LangSwitch class="mr-5 d-flex justify-end align-end"/>
+            <LangSwitch class="mr-5 d-flex justify-end align-end lang-switch"/>
         </v-app-bar>
         <v-main class="d-flex flex-column justify-center align-center">     
             <img
@@ -41,3 +41,12 @@ import logo from '~/assets/image/logo.png'
     const localPath = useLocalePath();
 
 </script>
+
+<style scoped>
+
+    .lang-switch {
+        position: absolute;
+        right: 17%;
+    }
+
+</style>

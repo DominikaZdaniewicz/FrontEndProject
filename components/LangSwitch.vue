@@ -12,14 +12,17 @@
 </template>
 
 <script setup>
+import { useLocale } from 'vuetify'
+  const { locales, locale, setLocale } = useI18n();
 
-const { locales, locale, setLocale } = useI18n();
+  const { current } = useLocale()
 
-const language = computed({
-    get: () => locale.value,
-    set: (value) => {
-        setLocale(value);
-    },
+  const language = computed({
+      get: () => locale.value,
+      set: (selectedLang) => {
+          setLocale(selectedLang);
+          current.value = selectedLang;
+      },
 })
 
 </script>

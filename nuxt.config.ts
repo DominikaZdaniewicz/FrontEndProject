@@ -14,13 +14,5 @@ export default ({
     langDir: 'locales/',
     defaultLocale: 'en',
     strategy: 'prefix_except_default',
-    messages: {
-      pl: {
-        dataTable: { itemsPerPage: 'Wyświetl na stronę' }
-      },
-      en: {
-        dataTable: { itemsPerPage: 'Items per page' }
-      }
-    }
   }
 })
