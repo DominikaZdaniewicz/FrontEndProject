@@ -13,8 +13,8 @@ export function useServers() {
         })
     }
 
-    function removeServer(id) {
-        servers.value = servers.value.filter(s => s.id !== id)
+    function removeServer(name) {
+        servers.value = servers.value.filter(s => s.name !== name)
     }
 
     function updateServer(updated) {

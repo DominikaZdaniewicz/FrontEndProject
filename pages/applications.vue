@@ -29,17 +29,40 @@
                         class="mr-3"
                         :size="40"
                         variant="text"/>
-                    <v-btn 
-                        :title="$t('delete')"
-                        icon="mdi-delete" 
-                        @click="removeApplications(item.id)"
-                        :size="40"
-                        variant="text">
-                    </v-btn>
+                    <v-dialog
+                        v-model="dialog"
+                        max-width="500">
+                        <template #activator="{ props }">
+                            <v-btn
+                            v-bind="props"
+                            icon="mdi-delete"
+                            variant="text"
+                            :size="40"
+                            :title="$t('delete')"
+                            @click="openDeleteDialog(item.id)"
+                            />
+                        </template>
+                        <v-card
+                            prepend-icon="mdi-alert"
+                            :text="$t('deleteMsg')">
+                            <template #actions>
+                                <v-spacer />
+                                <v-btn
+                                    @click="dialog = false">
+                                    {{ $t('no') }}
+                                </v-btn>
+                                <v-btn
+                                    class="bg-surface-variant"
+                                    @click="confirmDelete">
+                                    {{ $t('yes') }}
+                                </v-btn>
+                                </template>
+                        </v-card>
+                    </v-dialog>
                 </div>
             </template>
-            <template #item.server="{ item }">
-                <span>{{ item.server || '—' }}</span>
+            <template #item.serverName="{ item }">
+                <span>{{ (servers.value || []).find(s => s.id === item.serverId)?.name || '—' }}</span>
             </template>
         </v-data-table>
     </client-only>
@@ -49,6 +72,9 @@
 import { useApplications } from '~/composable/useApplications';
 import AddEditApplications from '~/components/AddEditApplications.vue';
 import headersNames from '../assets/data/headers.json';
+import { useServers } from '~/composable/useServers';
+
+    const { servers } = useServers();
 
     const { locale } = useI18n();
     
@@ -57,7 +83,7 @@ import headersNames from '../assets/data/headers.json';
         title: h.title[locale.value] 
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "server" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverName" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
 
     const { applications, addApplications, removeApplications, updateApplications } = useApplications();
 
@@ -65,14 +91,32 @@ import headersNames from '../assets/data/headers.json';
 
     const formApplications = ref(null)
 
+    const dialog = ref(false)
+
+    const applicationToDelete = ref(null)
+
     const openAddApplications = () => {
         formApplications.value = {
             id: null,
             name: '',
-            server: null,
+            description: '',
+            serverId: null,
             createdAt: '',
-            updatedAt: ''
+            updatedAt: '',
+            owner: '',
+            isActive: true
         }
+    }
+
+    const openDeleteDialog = (id) => {
+        applicationToDelete.value = id
+        dialog.value = true
+    }
+
+    const confirmDelete = () => {
+        removeApplications(applicationToDelete.value)
+        dialog.value = false
+        applicationToDelete.value = null
     }
 
     const openEditApplications = (applications) => {

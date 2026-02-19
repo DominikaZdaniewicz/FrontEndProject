@@ -8,7 +8,23 @@
                     v-model="localServer.name"
                     :label="$t('serverHeader')"
                     :error-messages="$t(nameError)"
-                ></v-text-field>      
+                ></v-text-field>  
+                <v-textarea
+                    v-model="localServer.description"
+                    :label="$t('description')">
+                </v-textarea>
+                <v-select 
+                    v-model="localServer.owner"
+                    :items="workers"
+                    item-title="name"
+                    item-value="name"
+                    :label="$t('owner')"
+                ></v-select>
+                <v-checkbox 
+                    v-model="localServer.isActive"
+                    :label="$t('status')"
+                    hide-details>
+                </v-checkbox>  
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -26,6 +42,9 @@
 </template>
 
 <script setup>
+import workersNames from '../assets/data/workers.json';
+
+    const workers = ref(workersNames)
 
     const props = defineProps({
         modelServerValue: Object

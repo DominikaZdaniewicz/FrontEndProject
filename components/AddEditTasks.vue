@@ -10,13 +10,37 @@
                     :error-messages="$t(nameError)"
                 ></v-text-field>
                 <v-select 
+                    class="mb-2"
+                    v-model="localTask.server"
+                    :items="servers"
+                    item-title="name"
+                    item-value="name"
+                    :label="$t('serverHeader')"
+                    :error-messages="serverError"
+                ></v-select> 
+                <v-select 
                     v-model="localTask.application"
                     :items="applications"
                     item-title="name"
                     item-value="name"
                     :label="$t('applicationHeader')"
-                    :error-messages="applicationError"
                 ></v-select>
+                <v-textarea
+                    v-model="localTask.description"
+                    :label="$t('description')">
+                </v-textarea> 
+                <v-select 
+                    v-model="localTask.owner"
+                    :items="workers"
+                    item-title="name"
+                    item-value="name"
+                    :label="$t('owner')"
+                ></v-select>
+                <v-checkbox 
+                    v-model="localTask.isActive"
+                    :label="$t('status')"
+                    hide-details>
+                </v-checkbox>   
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -35,7 +59,12 @@
 
 <script setup>
 import { useApplications } from '~/composable/useApplications';
+import { useServers } from '~/composable/useServers';
+import workersNames from '../assets/data/workers.json';
 
+    const { servers } = useServers();
+
+    const workers = ref(workersNames)
     const { applications } = useApplications();
 
     const props = defineProps({
@@ -51,7 +80,7 @@ import { useApplications } from '~/composable/useApplications';
     const localTask = ref({})
 
     const nameError = ref('')
-    const applicationError = ref('')
+    const serverError = ref('')
 
     watch(
         () => props.modelTaskValue,
@@ -59,7 +88,7 @@ import { useApplications } from '~/composable/useApplications';
             dialogOpenTask.value = !!val;
             localTask.value = val ? { ...val } : {}
             nameError.value = ''
-            applicationError.value = ''
+            serverError.value = ''
         },
         { immediate: true }
     )
@@ -74,10 +103,10 @@ import { useApplications } from '~/composable/useApplications';
     )
 
     watch(
-        () => localTask.value.application,
+        () => localTask.value.server,
         (newVal) => {
             if (newVal?.trim()) {
-                applicationError.value = ''
+                serverError.value = ''
             }
         }
     )
@@ -86,8 +115,8 @@ import { useApplications } from '~/composable/useApplications';
         if (!localTask.value.name?.trim()) {
             nameError.value = 'You must enter a name.'
             return 
-        } else if(!localTask.value.application?.trim()){
-            applicationError.value = 'You must select an application.'
+        } else if(!localTask.value.server?.trim()){
+            serverError.value = 'You must select a server.'
             return
         }
         emit('save-task', localTask.value)

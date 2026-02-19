@@ -14,9 +14,24 @@
                     :items="servers"
                     item-title="name"
                     item-value="name"
-                    :label="$t('taskHeader')"
-                    :error-messages="serverError"
-                ></v-select>      
+                    :label="$t('serverHeader')"
+                ></v-select>
+                <v-textarea
+                    v-model="localApplication.description"
+                    :label="$t('description')">
+                </v-textarea> 
+                <v-select 
+                    v-model="localApplication.owner"
+                    :items="workers"
+                    item-title="name"
+                    item-value="name"
+                    :label="$t('owner')"
+                ></v-select>
+                <v-checkbox 
+                    v-model="localApplication.isActive"
+                    :label="$t('status')"
+                    hide-details>
+                </v-checkbox>       
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -35,8 +50,11 @@
 
 <script setup>
 import { useServers } from '~/composable/useServers';
+import workersNames from '../assets/data/workers.json';
 
     const { servers } = useServers();
+
+    const workers = ref(workersNames)
 
     const props = defineProps({
         modelApplicationValue: Object
@@ -51,7 +69,6 @@ import { useServers } from '~/composable/useServers';
     const localApplication = ref({})
 
     const nameError = ref('')
-    const serverError = ref('')
 
     watch(
         () => props.modelApplicationValue,
@@ -71,22 +88,10 @@ import { useServers } from '~/composable/useServers';
         }
     )
 
-    watch(
-        () => localApplication.value.server,
-        (newVal) => {
-            if (newVal?.trim()) {
-                serverError.value = ''
-            }
-        }
-    )
-
     const saveApplication = () => {
         if (!localApplication.value.name?.trim()) {
             nameError.value = 'You must enter a name.'
             return 
-        } else if(!localApplication.value.server?.trim()){
-            serverError.value = 'You must select a server.'
-            return
         }
         emit('save-application', localApplication.value)
     }

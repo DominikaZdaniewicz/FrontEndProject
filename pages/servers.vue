@@ -20,6 +20,9 @@
             :headers="headers"
             :items="servers"
             :search="search">
+            <template #item.description="{ item }">
+                {{ item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
+            </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
                     <v-btn 
@@ -29,15 +32,36 @@
                         class="mr-3"
                         :size="40"
                         variant="text"/>
-                    <v-btn 
-                        :title="$t('delete')"
-                        icon="mdi-delete" 
-                        @click="removeServer(item.id)"
+                    <v-btn
+                        icon="mdi-delete"
+                        variant="text"
                         :size="40"
-                        variant="text"/>
+                        :disabled="isServerUsed(item.id)"
+                        :title="isServerUsed(item.id) ? $t('serverUsed') : $t('delete')"
+                        @click="openDeleteDialog(item.id)"/>
                 </div>
             </template>
         </v-data-table>
+        <v-dialog
+            v-model="dialog"
+            max-width="500">
+            <v-card
+                prepend-icon="mdi-alert"
+                :text="$t('deleteMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialog = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmDelete">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
     </client-only>
 </template>
 
@@ -45,6 +69,12 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
+
+    const applications = ref([])
+
+    onMounted(() => {
+        applications.value=JSON.parse(localStorage.getItem('applications') || '[]')
+    })
 
     const { servers, addServer, removeServer, updateServer } = useServers();
 
@@ -55,19 +85,54 @@ import headersNames from '../assets/data/headers.json';
         title: h.title[locale.value] 
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('description'), key: "description" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
 
     const search = ref('')
 
+    const dialog = ref(false)
+
     const formServer = ref(null)
+
+    const serverToDelete = ref(null)
 
     const openAddServer = () => {
         formServer.value = {
             id: null,
             name: '',
+            description: '',
             createdAt: '',
-            updatedAt: ''
+            updatedAt: '',
+            owner: '',
+            isActive: true
         }
+    }
+
+    const isServerUsed = (serverId) => {
+        return applications.value?.some( app => app.serverId === serverId) ?? false
+    }
+
+
+    const openDeleteDialog = (serverId) => {
+        serverToDelete.value = serverId
+        dialog.value = true
+    }
+
+    const confirmDelete = () => {
+        if (!serverToDelete.value) return
+
+        const serverObj = servers.value.find(s => s.id === serverToDelete.value)
+        if (!serverObj) return
+
+        if (isServerUsed(serverObj.id)) {
+            alert($t('serverUsed'))
+            dialog.value = false
+            serverToDelete.value = null
+            return
+        }
+
+        removeServer(serverToDelete.value)
+        dialog.value = false
+        serverToDelete.value = null
     }
 
     const openEditServer = (server) => {

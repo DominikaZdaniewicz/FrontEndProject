@@ -23,5 +23,12 @@
   "cancel": "Cancel",
   "nameError": "You must enter a name.",
   "itemsPerPage": "Items per page",
-  "language": "Language"
+  "language": "Language",
+  "description": "Description",
+  "status": "Active",
+  "owner": "Owner",
+  "deleteMsg": "Are you sure you want to delete it?",
+  "no": "No",
+  "yes": "Yes",
+  "serverUsed": "This server is being used by an application."
 }

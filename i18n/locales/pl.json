@@ -23,5 +23,12 @@
   "cancel": "Cofnij",
   "nameError": "Wpisz nazwę",
   "itemsPerPage": "Pozycje na stronę",
-  "language": "Język"
+  "language": "Język",
+  "description": "Opis",
+  "status": "Aktywny",
+  "owner": "Właściciel",
+  "deleteMsg": "Na pewno chcesz usunąć?",
+  "no": "Nie",
+  "yes": "Tak",
+  "serverUsed": "Ten serwer jest używany przez aplikację"
 }
