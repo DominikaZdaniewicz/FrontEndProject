@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "name": "Database Backup",
+    "description": "Backup accounting app database",
+    "serverId": 1,
+    "applicationId": 1,
+    "server": "Main Server",
+    "application": "Accounting App",
+    "createdAt": "2026-02-01",
+    "updatedAt": "2026-02-01",
+    "owner": "Kate",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "name": "CRM Update",
+    "description": "Update CRM system to latest version",
+    "serverId": 2,
+    "applicationId": 2,
+    "server": "Backup Server",
+    "application": "CRM System",
+    "createdAt": "2026-02-02",
+    "updatedAt": "2026-02-02",
+    "owner": "Max",
+    "isActive": true
+  }
+]

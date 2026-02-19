@@ -61,8 +61,8 @@
                     </v-dialog>
                 </div>
             </template>
-            <template #item.serverName="{ item }">
-                <span>{{ (servers.value || []).find(s => s.id === item.serverId)?.name || '—' }}</span>
+            <template #item.server="{ item }">
+                <span>{{ item.server || '—' }}</span>
             </template>
         </v-data-table>
     </client-only>
@@ -73,6 +73,7 @@ import { useApplications } from '~/composable/useApplications';
 import AddEditApplications from '~/components/AddEditApplications.vue';
 import headersNames from '../assets/data/headers.json';
 import { useServers } from '~/composable/useServers';
+import applicationsData from '~/assets/data/applications.json';
 
     const { servers } = useServers();
 
@@ -83,7 +84,7 @@ import { useServers } from '~/composable/useServers';
         title: h.title[locale.value] 
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverName" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "server" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
 
     const { applications, addApplications, removeApplications, updateApplications } = useApplications();
 
@@ -137,6 +138,13 @@ import { useServers } from '~/composable/useServers';
 
     closeDialogApplications()
     }
+
+    watchEffect(() => {
+        if (!process.client) return;
+
+        const savedApplications = JSON.parse(localStorage.getItem('applications') || 'null');
+        applications.value = savedApplications ?? applicationsData;
+    });
 
 </script>
 

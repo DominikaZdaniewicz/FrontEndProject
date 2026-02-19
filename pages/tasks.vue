@@ -62,8 +62,8 @@
                     </v-dialog>
                 </div>
             </template>
-            <template #item.serverName="{ item }">
-                <span>{{ item.serverName || '—' }}</span>
+            <template #item.server="{ item }">
+                <span>{{ item.server || '—' }}</span>
             </template>
             <template #item.application="{ item }">
                 <span>{{ item.application || '—' }}</span>
@@ -76,6 +76,7 @@
 import { useTasks } from '~/composable/useTasks';
 import AddEditTasks from '~/components/AddEditTasks.vue';
 import headersNames from '../assets/data/headers.json';
+import tasksData from '../assets/data/tasks.json'
 
     const { locale } = useI18n();
     
@@ -84,7 +85,7 @@ import headersNames from '../assets/data/headers.json';
         title: h.title[locale.value] 
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverName" }, { title: $t('applicationHeader'), key: "application" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "server" }, { title: $t('applicationHeader'), key: "application" }, ...displayedHeaders.slice(1)]);
 
 
     const { tasks, addTask, removeTask, updateTask } = useTasks();
@@ -102,8 +103,8 @@ import headersNames from '../assets/data/headers.json';
             id: null,
             name: '',
             description: '',
-            serverName: null,
-            application: null,
+            serverId: null,
+            applicationId: null,
             createdAt: '',
             updatedAt: '',
             owner: '',
@@ -139,6 +140,13 @@ import headersNames from '../assets/data/headers.json';
 
         closeDialogTask()
     }
+
+    watchEffect(() => {
+        if (!process.client) return;
+
+        const savedTasks = JSON.parse(localStorage.getItem('tasks') || 'null');
+        tasks.value = savedTasks ?? tasksData;
+    });
 
 </script>
 

@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "name": "Main Server",
+    "description": "Primary server for all applications",
+    "createdAt": "2026-01-01",
+    "updatedAt": "2026-01-01",
+    "owner": "Kate",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "name": "Backup Server",
+    "description": "Secondary server for backup and testing",
+    "createdAt": "2026-01-01",
+    "updatedAt": "2026-01-01",
+    "owner": "Max",
+    "isActive": true
+  }
+]

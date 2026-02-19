@@ -10,10 +10,10 @@
                     :error-messages="$t(nameError)"
                 ></v-text-field>
                 <v-select 
-                    v-model="localApplication.server"
+                    v-model="localApplication.serverId"
                     :items="servers"
                     item-title="name"
-                    item-value="name"
+                    item-value="id"
                     :label="$t('serverHeader')"
                 ></v-select>
                 <v-textarea

@@ -21,7 +21,7 @@
             :items="servers"
             :search="search">
             <template #item.description="{ item }">
-                {{ item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
+                {{ item.raw?.description ? item.raw.description.slice(0, 50) + (item.raw.description.length > 50 ? '...' : '') : '' }}
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
@@ -69,12 +69,9 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
+import serversData from '~/assets/data/servers.json';
 
     const applications = ref([])
-
-    onMounted(() => {
-        applications.value=JSON.parse(localStorage.getItem('applications') || '[]')
-    })
 
     const { servers, addServer, removeServer, updateServer } = useServers();
 
@@ -108,7 +105,8 @@ import headersNames from '../assets/data/headers.json';
     }
 
     const isServerUsed = (serverId) => {
-        return applications.value?.some( app => app.serverId === serverId) ?? false
+        if (!serverId) return false
+        return applications.value?.some(app => Number(app.serverId) === Number(serverId)) ?? false
     }
 
 
@@ -136,7 +134,11 @@ import headersNames from '../assets/data/headers.json';
     }
 
     const openEditServer = (server) => {
-        formServer.value = { ...server }
+        const matchedServer = servers.value.find(s => s.name === server.server)
+        formServer.value = { 
+            ...server,
+            serverId: server.serverId ?? matchedServer?.id ?? null
+        }
     }
 
     const closeDialogServer = () => {
@@ -153,6 +155,25 @@ import headersNames from '../assets/data/headers.json';
 
     closeDialogServer()
     }
+
+    watchEffect(() => {
+        if (!process.client) return;
+
+        const savedServers = JSON.parse(localStorage.getItem('servers') || 'null');
+        servers.value = savedServers ?? serversData;
+    });
+
+    watchEffect(() => {
+        if (!process.client) return
+
+        const rawApps = JSON.parse(localStorage.getItem('applications') || '[]');
+
+        applications.value = rawApps.map(app => ({
+            ...app,
+            serverId: app.serverId ?? servers.value.find(s => s.name === app.server)?.id ?? null
+        }));
+    })
+
 </script>
 
 <style scoped>
