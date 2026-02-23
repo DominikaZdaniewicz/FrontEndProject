@@ -1,8 +1,10 @@
 import { useLocalStorage } from '@vueuse/core'
+import tasksData from '~/assets/data/tasks.json'
+
 
 export function useTasks() {
 
-    const tasks = useLocalStorage('tasks', [])
+    const tasks = useLocalStorage('tasks', tasksData)
 
     function addTask(task) {
         tasks.value.push({

@@ -10,19 +10,18 @@
                     :error-messages="$t(nameError)"
                 ></v-text-field>
                 <v-select 
-                    class="mb-2"
-                    v-model="localTask.server"
+                    v-model="localTask.serverId"
                     :items="servers"
                     item-title="name"
-                    item-value="name"
+                    item-value="id"
                     :label="$t('serverHeader')"
                     :error-messages="serverError"
                 ></v-select> 
                 <v-select 
-                    v-model="localTask.application"
-                    :items="applications"
+                    v-model="localTask.applicationId"
+                    :items="applications.filter(app => app.serverId === localTask.serverId)"
                     item-title="name"
-                    item-value="name"
+                    item-value="id"
                     :label="$t('applicationHeader')"
                 ></v-select>
                 <v-textarea
@@ -103,9 +102,9 @@ import workersNames from '../assets/data/workers.json';
     )
 
     watch(
-        () => localTask.value.server,
+        () => localTask.value.serverId,
         (newVal) => {
-            if (newVal?.trim()) {
+            if (newVal) {
                 serverError.value = ''
             }
         }
@@ -115,7 +114,7 @@ import workersNames from '../assets/data/workers.json';
         if (!localTask.value.name?.trim()) {
             nameError.value = 'You must enter a name.'
             return 
-        } else if(!localTask.value.server?.trim()){
+        } else if(!localTask.value.serverId){
             serverError.value = 'You must select a server.'
             return
         }

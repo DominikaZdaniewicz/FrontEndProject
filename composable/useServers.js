@@ -1,8 +1,9 @@
 import { useLocalStorage } from '@vueuse/core'
+import serversData from '~/assets/data/servers.json'
 
 export function useServers() {
 
-    const servers = useLocalStorage('servers', [])
+    const servers = useLocalStorage('servers', serversData)
 
     function addServer(server) {
         servers.value.push({

@@ -69,9 +69,9 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
-import serversData from '~/assets/data/servers.json';
 
     const applications = ref([])
+    const tasks = ref([]);
 
     const { servers, addServer, removeServer, updateServer } = useServers();
 
@@ -106,9 +106,11 @@ import serversData from '~/assets/data/servers.json';
 
     const isServerUsed = (serverId) => {
         if (!serverId) return false
-        return applications.value?.some(app => Number(app.serverId) === Number(serverId)) ?? false
-    }
+        const usedInApplications = applications.value?.some(app => Number(app.serverId) === Number(serverId)) ?? false
+        const usedInTasks = tasks.value?.some(task => Number(task.serverId) === Number(serverId)) ?? false
 
+        return usedInApplications || usedInTasks;
+    }
 
     const openDeleteDialog = (serverId) => {
         serverToDelete.value = serverId
@@ -121,12 +123,12 @@ import serversData from '~/assets/data/servers.json';
         const serverObj = servers.value.find(s => s.id === serverToDelete.value)
         if (!serverObj) return
 
-        if (isServerUsed(serverObj.id)) {
-            alert($t('serverUsed'))
-            dialog.value = false
-            serverToDelete.value = null
-            return
-        }
+        // if (isServerUsed(serverObj.id)) {
+        //     alert($t('serverUsed'))
+        //     dialog.value = false
+        //     serverToDelete.value = null
+        //     return
+        // }
 
         removeServer(serverToDelete.value)
         dialog.value = false
@@ -155,22 +157,19 @@ import serversData from '~/assets/data/servers.json';
 
     closeDialogServer()
     }
-
-    watchEffect(() => {
-        if (!process.client) return;
-
-        const savedServers = JSON.parse(localStorage.getItem('servers') || 'null');
-        servers.value = savedServers ?? serversData;
-    });
-
     watchEffect(() => {
         if (!process.client) return
 
-        const rawApps = JSON.parse(localStorage.getItem('applications') || '[]');
+        const rawApps = JSON.parse(localStorage.getItem('applications') || 'applications.json');
+        const rawTasks = JSON.parse(localStorage.getItem('tasks') || 'tasks.json');
 
         applications.value = rawApps.map(app => ({
             ...app,
             serverId: app.serverId ?? servers.value.find(s => s.name === app.server)?.id ?? null
+        }));
+        tasks.value = rawTasks.map(task => ({
+            ...task,
+            serverId: task.serverId ?? tasks.value.find(s => s.name === task.server)?.id ?? null
         }));
     })
 

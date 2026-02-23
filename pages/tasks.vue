@@ -16,7 +16,6 @@
             <search-bar :label="$t('search')" v-model="search" />
         </div>   
         <v-data-table
-            hide-default-footer
             class="rounded-lg"
             :headers="headers"
             :items="tasks"
@@ -62,11 +61,11 @@
                     </v-dialog>
                 </div>
             </template>
-            <template #item.server="{ item }">
-                <span>{{ item.server || '—' }}</span>
+            <template #item.serverId="{ item }">
+                <span>{{ servers ? getServerName(item.serverId) : '-'}}</span>
             </template>
-            <template #item.application="{ item }">
-                <span>{{ item.application || '—' }}</span>
+            <template #item.applicationId="{ item }">
+                <span>{{ getApplicationName(item.applicationId)}}</span>
             </template>
         </v-data-table>
     </client-only>
@@ -76,7 +75,9 @@
 import { useTasks } from '~/composable/useTasks';
 import AddEditTasks from '~/components/AddEditTasks.vue';
 import headersNames from '../assets/data/headers.json';
-import tasksData from '../assets/data/tasks.json'
+import tasksData from '../assets/data/tasks.json';
+import { useServers } from '~/composable/useServers'
+import { useApplications } from '~/composable/useApplications'
 
     const { locale } = useI18n();
     
@@ -85,10 +86,12 @@ import tasksData from '../assets/data/tasks.json'
         title: h.title[locale.value] 
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "server" }, { title: $t('applicationHeader'), key: "application" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverId" }, { title: $t('applicationHeader'), key: "applicationId" }, ...displayedHeaders.slice(1)]);
 
 
     const { tasks, addTask, removeTask, updateTask } = useTasks();
+    const { servers } = useServers();
+    const { applications } = useApplications();
 
     const search = ref('')
 
@@ -110,6 +113,16 @@ import tasksData from '../assets/data/tasks.json'
             owner: '',
             isActive: true
         }
+    }
+
+    const getServerName= (id) => {
+        const server = servers.value.find(s => Number(s.id) === Number(id))
+        return server?.name || '-'
+    }
+
+    const getApplicationName= (id) => {
+        const application = applications.value.find(a => Number(a.id) === Number(id))
+        return application?.name || '-'
     }
 
     const openDeleteDialog = (id) => {
@@ -140,13 +153,6 @@ import tasksData from '../assets/data/tasks.json'
 
         closeDialogTask()
     }
-
-    watchEffect(() => {
-        if (!process.client) return;
-
-        const savedTasks = JSON.parse(localStorage.getItem('tasks') || 'null');
-        tasks.value = savedTasks ?? tasksData;
-    });
 
 </script>
 

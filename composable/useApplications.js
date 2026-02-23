@@ -1,8 +1,10 @@
 import { useLocalStorage } from '@vueuse/core'
+import applicationsData from '~/assets/data/applications.json'
+
 
 export function useApplications() {
 
-    const applications = useLocalStorage('applications', [])
+    const applications = useLocalStorage('applications', applicationsData)
 
     function addApplications(application) {
         applications.value.push({
