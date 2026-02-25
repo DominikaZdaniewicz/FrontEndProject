@@ -80,7 +80,7 @@ import workersNames from '../assets/data/workers.json';
 
     const saveServer= () => {
         if (!localServer.value.name?.trim()) {
-            nameError.value = 'You must enter a name.'
+            nameError.value = $t('nameError');
             return 
         }
         emit('saveServer', localServer.value)

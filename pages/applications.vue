@@ -151,6 +151,15 @@ import { useTasks } from '~/composable/useTasks';
 
         closeDialogApplications();
     }
+
+    watch(
+        () => formApplications.value?.serverId,
+        (newVal) => {
+            if (newVal) {
+                
+            }
+        }
+    )
     
 </script>
 

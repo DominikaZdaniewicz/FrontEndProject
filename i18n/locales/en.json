@@ -22,6 +22,7 @@
   "saveEditText": "Save",
   "cancel": "Cancel",
   "nameError": "You must enter a name.",
+  "serverError": "You must enter a server.",
   "itemsPerPage": "Items per page",
   "language": "Language",
   "description": "Description",

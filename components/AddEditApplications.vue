@@ -1,13 +1,15 @@
 <template>
     <v-dialog v-model="dialogOpenApplications" max-width="500px">
         <v-card>
-            <v-card-title class="mx-2 mt-4">{{ isEditing ? $t("editText") : $t("addText") }} {{$t("applicationHeader")}}</v-card-title>
+            <v-card-title class="mx-2 mt-4">
+                {{ isEditing ? $t("editText") : $t("addText") }} {{$t("applicationHeader")}}
+            </v-card-title>
             <v-card-text>
                 <v-text-field
                     class="mb-2"
                     v-model="localApplication.name"
                     :label="$t('applicationHeader')"
-                    :error-messages="$t(nameError)"
+                    :error-messages="nameError"
                 ></v-text-field>
                 <v-select 
                     v-model="localApplication.serverId"
@@ -15,6 +17,7 @@
                     item-title="name"
                     item-value="id"
                     :label="$t('serverHeader')"
+                    :error-messages="serverError"
                 ></v-select>
                 <v-textarea
                     v-model="localApplication.description"
@@ -69,6 +72,7 @@ import workersNames from '../assets/data/workers.json';
     const localApplication = ref({})
 
     const nameError = ref('')
+    const serverError = ref('')
 
     watch(
         () => props.modelApplicationValue,
@@ -87,16 +91,30 @@ import workersNames from '../assets/data/workers.json';
             }
         }
     )
+    watch(
+        () => localApplication.value.serverId, 
+        val => {
+            if (val) serverError.value = ''
+        }
+    )
+
 
     const saveApplication = () => {
         if (!localApplication.value.name?.trim()) {
-            nameError.value = 'You must enter a name.'
+            nameError.value = $t('nameError');
             return 
+        } else if(!localApplication.value.serverId){
+            serverError.value = $t('serverError');
+            return
         }
+        nameError.value = ''
+        serverError.value = ''
         emit('save-application', localApplication.value)
     }
 
     const cancelApplication = () => {
+        nameError.value = ''
+        serverError.value = ''
         emit('cancel-application')
     }
 

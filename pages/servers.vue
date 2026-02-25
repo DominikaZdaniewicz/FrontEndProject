@@ -21,7 +21,7 @@
             :items="servers"
             :search="search">
             <template #item.description="{ item }">
-                {{ item.raw?.description ? item.raw.description.slice(0, 50) + (item.raw.description.length > 50 ? '...' : '') : '' }}
+                {{ item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
@@ -122,13 +122,6 @@ import headersNames from '../assets/data/headers.json';
 
         const serverObj = servers.value.find(s => s.id === serverToDelete.value)
         if (!serverObj) return
-
-        // if (isServerUsed(serverObj.id)) {
-        //     alert($t('serverUsed'))
-        //     dialog.value = false
-        //     serverToDelete.value = null
-        //     return
-        // }
 
         removeServer(serverToDelete.value)
         dialog.value = false
