@@ -22,8 +22,7 @@
             item-title="name"
             item-value="id"
             :label="$t('serverHeader')"
-            :error-messages="serverError"
-            />
+            :error-messages="serverError"/>
             <v-select
             v-model="localTask.applicationId"
             :items="filteredApplications"
@@ -31,9 +30,9 @@
             item-value="id"
             :label="$t('applicationHeader')"
             >
-            <template #selection>
-                <span>{{ displayApplicationName }}</span>
-            </template>
+                <template #selection>
+                    <span>{{ displayApplicationName }}</span>
+                </template>
             </v-select>
             <v-textarea
             v-model="localTask.description"

@@ -74,6 +74,7 @@ import headersNames from '../assets/data/headers.json';
     const tasks = ref([]);
 
     const { servers, addServer, removeServer, updateServer } = useServers();
+    console.log(servers)
 
     const { locale } = useI18n();
     
@@ -104,16 +105,18 @@ import headersNames from '../assets/data/headers.json';
         }
     }
 
-    const isServerUsed = (serverId) => {
-        if (!serverId) return false
-        const usedInApplications = applications.value?.some(app => Number(app.serverId) === Number(serverId)) ?? false
-        const usedInTasks = tasks.value?.some(task => Number(task.serverId) === Number(serverId)) ?? false
+    const localServerId = formServer.value?.id;
+
+    const isServerUsed = (localServerId) => {
+        if (!localServerId) return false
+        const usedInApplications = applications.value?.some(app => Number(app.serverId) === Number(localServerId)) ?? false
+        const usedInTasks = tasks.value?.some(task => Number(task.serverId) === Number(localServerId)) ?? false
 
         return usedInApplications || usedInTasks;
     }
 
-    const openDeleteDialog = (serverId) => {
-        serverToDelete.value = serverId
+    const openDeleteDialog = (localServerId) => {
+        serverToDelete.value = localServerId;
         dialog.value = true
     }
 
@@ -132,7 +135,7 @@ import headersNames from '../assets/data/headers.json';
         const matchedServer = servers.value.find(s => s.name === server.server)
         formServer.value = { 
             ...server,
-            serverId: server.serverId ?? matchedServer?.id ?? null
+            id: server.id ?? matchedServer?.id ?? null
         }
     }
 
@@ -150,6 +153,7 @@ import headersNames from '../assets/data/headers.json';
 
     closeDialogServer()
     }
+
     watchEffect(() => {
         if (!process.client) return
 
@@ -162,7 +166,7 @@ import headersNames from '../assets/data/headers.json';
         }));
         tasks.value = rawTasks.map(task => ({
             ...task,
-            serverId: task.serverId ?? tasks.value.find(s => s.name === task.server)?.id ?? null
+            serverId: task.serverId ?? servers.value.find(s => s.name === task.server)?.id ?? null
         }));
     })
 

@@ -58,12 +58,11 @@
           </v-dialog>
         </div>
       </template>
-
       <template #item.serverId="{ item }">
-        <span>{{ getServerName(item.serverId, item.applicationId) }}</span>
+        <span>{{ getServerName(item) }}</span>
       </template>
       <template #item.applicationId="{ item }">
-        <span>{{ getApplicationName(item.applicationId) }}</span>
+        <span>{{ getApplicationName(item) }}</span>
       </template>
     </v-data-table>
   </client-only>
@@ -75,7 +74,6 @@ import AddEditTasks from '~/components/AddEditTasks.vue';
 import headersNames from '../assets/data/headers.json';
 import { useServers } from '~/composable/useServers';
 import { useApplications } from '~/composable/useApplications';
-import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 
     const { locale, t } = useI18n();
@@ -104,15 +102,16 @@ import { useI18n } from 'vue-i18n';
     const dialogDelete = ref(false);
     const taskToDelete = ref(null);
 
-    const getServerName = (serverId, applicationId = null) => {
-        const app = applications.value.find(a => Number(a.id) === Number(applicationId));
-        const serverIdToUse = app?.serverId ?? serverId;
-        return servers.value.find(s => Number(s.id) === Number(serverIdToUse))?.name || '-';
+    const getApplicationName = (task = null) => {
+      return applications.value.find(a => Number(a.id) === Number(task.applicationId))?.name || '-';
     };
 
-    const getApplicationName = id => {
-        const application = applications.value.find(a => Number(a.id) === Number(id));
-        return application?.name || '-';
+    const getServerName = (task=null) => {
+      if(getApplicationName(task) !== '-') {
+        const appId = applications.value.find(a => Number(a.id) === Number(task.applicationId))?.serverId;
+        return servers.value.find(s => Number(s.id) === Number(appId))?.name;
+      }
+      return servers.value.find(s => Number(s.id) === Number(task.serverId))?.name || '-';
     };
 
     const openAddTask = () => {
@@ -155,4 +154,5 @@ import { useI18n } from 'vue-i18n';
         dialogDelete.value = false;
         taskToDelete.value = null;
     };
+
 </script>

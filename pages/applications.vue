@@ -111,8 +111,7 @@ import { useTasks } from '~/composable/useTasks';
     }
 
     const getServerName= (id) => {
-        const server = servers.value.find(s => s.id === id)
-        return server?.name || '-'
+        return servers.value.find(s => s.id === id)?.name || '-'
     }
 
     const openDeleteDialog = (id) => {
