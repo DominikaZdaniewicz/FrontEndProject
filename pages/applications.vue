@@ -76,7 +76,7 @@ import { useServers } from '~/composable/useServers';
 import { useTasks } from '~/composable/useTasks';
 
     const { servers } = useServers();
-    const { tasks } = useTasks();
+    const { tasks, updateTask } = useTasks();
 
     const { locale } = useI18n();
     
@@ -140,15 +140,20 @@ import { useTasks } from '~/composable/useTasks';
         formApplications.value = null
     }
 
-    const handleSaveApplications = (applications) => {
-        
-        if (applications.id) {
-            updateApplications(applications)    
+    const handleSaveApplications = (application) => {
+        if (application.id) {
+            const relatedTasks = tasks.value.filter(
+                task => task.applicationId === application.id
+            )
+            relatedTasks.forEach(task => {
+                task.serverId = application.serverId
+            })
+            updateApplications(application)
+            updateTask(relatedTasks)
         } else {
-            addApplications(applications)        
+            addApplications(application)
         }
-
-        closeDialogApplications();
+        closeDialogApplications()
     }
 
     watch(

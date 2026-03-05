@@ -107,10 +107,6 @@ import { useI18n } from 'vue-i18n';
     };
 
     const getServerName = (task=null) => {
-      if(getApplicationName(task) !== '-') {
-        const appId = applications.value.find(a => Number(a.id) === Number(task.applicationId))?.serverId;
-        return servers.value.find(s => Number(s.id) === Number(appId))?.name;
-      }
       return servers.value.find(s => Number(s.id) === Number(task.serverId))?.name || '-';
     };
 

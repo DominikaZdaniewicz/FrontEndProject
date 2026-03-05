@@ -91,13 +91,13 @@ import workersNames from '../assets/data/workers.json';
             }
         }
     )
+
     watch(
         () => localApplication.value.serverId, 
         val => {
             if (val) serverError.value = ''
         }
     )
-
 
     const saveApplication = () => {
         if (!localApplication.value.name?.trim()) {
@@ -109,7 +109,8 @@ import workersNames from '../assets/data/workers.json';
         }
         nameError.value = ''
         serverError.value = ''
-        emit('save-application', localApplication.value)
+
+        emit('save-application', localApplication.value)        
     }
 
     const cancelApplication = () => {

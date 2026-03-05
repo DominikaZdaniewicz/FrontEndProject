@@ -1,0 +1,29 @@
+[
+  {
+    "id": 1,
+    "name": "Server 1",
+    "description": "Primary server for all applications",
+    "createdAt": "2026-01-01",
+    "updatedAt": "2026-03-03",
+    "owner": "Kate",
+    "isActive": true
+  },
+  {
+    "id": 2,
+    "name": "Server 2",
+    "description": "Secondary server for backup and testing",
+    "createdAt": "2026-01-01",
+    "updatedAt": "2026-03-03",
+    "owner": "Max",
+    "isActive": true
+  },
+  {
+    "id": 1772518193972,
+    "name": "Server 3",
+    "description": "Empty",
+    "createdAt": "2026-03-03",
+    "updatedAt": "2026-03-03",
+    "owner": "",
+    "isActive": true
+  }
+]
