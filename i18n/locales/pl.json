@@ -3,6 +3,12 @@
   "serversBtn": "Serwery",
   "applicationsBtn": "Aplikacje",
   "tasksBtn": "Zadania",
+  "applicationsNumber": "Ilość przynależnych aplikacji",
+  "tasksNumber": "Ilość przynależnych zadań",
+  "appsList": "Lista aplikacji",
+  "serversInfoBtn": "Informacje o serwerach",
+  "serversFullInfo": "Pełne informacje",
+  "basicInfo": "Podstawowe informacje",
   "addServer": "Dodaj nowy serwer",
   "addApplication": "Dodaj nową aplikację",
   "addTask": "Dodaj nowe zadanie",
@@ -31,5 +37,6 @@
   "deleteMsg": "Na pewno chcesz usunąć?",
   "no": "Nie",
   "yes": "Tak",
-  "serverUsed": "Ten serwer jest używany przez aplikację"
+  "serverUsed": "Ten serwer jest używany przez aplikację",
+  "close": "Zamknij"
 }

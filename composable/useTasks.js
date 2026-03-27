@@ -1,37 +1,55 @@
-import { useLocalStorage } from '@vueuse/core'
-import tasksData from '~/assets/data/tasks.json'
-
-
 export function useTasks() {
 
-    const tasks = useLocalStorage('tasks', tasksData)
+    const backendTasks = ref([])
 
-    function addTask(task) {
-        tasks.value.push({
-            ...task,
-            id: Date.now(),
-            createdAt: new Date ().toISOString().split('T')[0],
-            updatedAt: '-',
-        })
+    async function getTasks() {
+        backendTasks.value = await $fetch('/api/Task/all')
+        return backendTasks.value
     }
 
-    function removeTask(id) {
-        tasks.value = tasks.value.filter(t => t.id !== id)
+    async function addTask(task) {
+        const createdTask = await $fetch('/api/Task', {
+            method: 'POST',
+            body: task
+        });
+        backendTasks.value.push(createdTask);
+        return createdTask;
     }
 
-    function updateTask(updated) {
-        const index = tasks.value.findIndex(s => s.id === updated.id)
+    async function removeTask(id) {
+        await $fetch(`/api/Task/${id}`, {
+            method: 'DELETE'
+        });
+        backendTasks.value = backendTasks.value.filter(t => t.id !== id);
+    }
 
-        tasks.value[index] = {
-            ...updated,
-            updatedAt: new Date ().toISOString().split('T')[0]
+    async function updateTask(task) {
+        const updatedTask = await $fetch(`/api/Task/${task.id}`, {
+            method: 'PUT',
+            body: task
+        });
+        const index = backendTasks.value.findIndex(s => s.id === task.id)
+
+        if (index !== -1) {
+            backendTasks.value[index] = updatedTask;
+        } else {
+            backendTasks.value.push(updatedTask);
         }
+
+        return updatedTask;
+    }
+
+    async function getTasksBasic() {
+        const data = await $fetch('/api/Task/basic')
+        return ref(data)
     }
 
     return {
-        tasks,
+        backendTasks,
+        getTasks,
         addTask,
         removeTask,
-        updateTask
+        updateTask,
+        getTasksBasic
     }
 }

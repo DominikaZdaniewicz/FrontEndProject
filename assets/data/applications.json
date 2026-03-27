@@ -4,8 +4,8 @@
     "name": "Accounting App",
     "description": "Application for financial operations",
     "serverId": 1,
-    "createdAt": "2026-01-05",
-    "updatedAt": "2026-01-05",
+    "dateOfCreation": "2026-01-05",
+    "dateOfUpdate": "2026-01-05",
     "owner": "Max",
     "isActive": true
   },
@@ -14,8 +14,8 @@
     "name": "CRM System",
     "description": "Customer relationship management",
     "serverId": 2,
-    "createdAt": "2026-01-06",
-    "updatedAt": "2026-01-06",
+    "dateOfCreation": "2026-01-06",
+    "dateOfUpdate": "2026-01-06",
     "owner": "Tom",
     "isActive": true
   }

@@ -3,6 +3,12 @@
   "serversBtn": "Servers",
   "applicationsBtn": "Applications",
   "tasksBtn": "Tasks",
+  "applicationsNumber": "Number of connected applications",
+  "tasksNumber": "Number of connected tasks",
+  "appsList": "List of applications",
+  "serversInfoBtn": "Servers Info",
+  "serversFullInfo": "Full Info",
+  "basicInfo": "Basic Info",
   "addServer": "Add New Server",
   "addApplication": "Add New Application",
   "addTask": "Add New Task",
@@ -31,5 +37,6 @@
   "deleteMsg": "Are you sure you want to delete it?",
   "no": "No",
   "yes": "Yes",
-  "serverUsed": "This server is being used by an application."
+  "serverUsed": "This server is being used by an application.",
+  "close": "Close"
 }

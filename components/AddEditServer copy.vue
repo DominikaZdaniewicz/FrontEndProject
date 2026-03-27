@@ -65,7 +65,7 @@ import { useOwners } from '~/composable/useOwners';
         () => props.modelServerValue,
         (val) => {
             dialogOpenServers.value = !!val;
-            localServer.value = val ? { ...val } : {}
+            localServer.value = val ? { ...val } : null
         },
         { immediate: true }
     )

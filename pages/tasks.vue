@@ -22,9 +22,15 @@
     <v-data-table
       class="rounded-lg"
       :headers="headers"
-      :items="tasks"
+      :items="backendTasks"
       :search="search"
     >
+      <template #item.dateOfCreation="{ item }">
+        {{ formatDate(item.dateOfCreation) }}
+      </template>
+      <template #item.dateOfUpdate="{ item }">
+        {{ formatDate(item.dateOfUpdate) }}
+      </template>
       <template #item.actions="{ item }">
         <div class="d-flex justify-end">
           <v-btn
@@ -59,10 +65,10 @@
         </div>
       </template>
       <template #item.serverId="{ item }">
-        <span>{{ getServerName(item) }}</span>
+        <span>{{ getServerName(item.applicationId) }}</span>
       </template>
       <template #item.applicationId="{ item }">
-        <span>{{ getApplicationName(item) }}</span>
+        <span>{{ getApplicationName(item.applicationId) }}</span>
       </template>
     </v-data-table>
   </client-only>
@@ -79,20 +85,25 @@ import { useI18n } from 'vue-i18n';
     const { locale, t } = useI18n();
 
     const displayedHeaders = headersNames.map(h => ({
-        ...h,
-        title: h.title[locale.value]
+      ...h,
+      title: h.title[locale.value]
     }));
 
     const headers = ref([
-        ...displayedHeaders.slice(0, 1),
-        { title: t('serverHeader'), key: 'serverId' },
-        { title: t('applicationHeader'), key: 'applicationId' },
-        ...displayedHeaders.slice(1)
+      ...displayedHeaders.slice(0, 1),
+      { title: t('serverHeader'), key: 'serverId' },
+      { title: t('applicationHeader'), key: 'applicationId' },
+      ...displayedHeaders.slice(1)
     ]);
 
-    const { tasks, addTask, removeTask, updateTask } = useTasks();
-    const { servers } = useServers();
-    const { applications } = useApplications();
+    const { backendTasks, getTasks, addTask, removeTask, updateTask } = useTasks();
+    await getTasks();
+        
+    const { backendServers, getServers } = useServers();
+    await getServers();
+    const { backendApplications, getApplications } = useApplications();
+        
+    await getApplications()
 
     const search = ref('');
 
@@ -101,54 +112,105 @@ import { useI18n } from 'vue-i18n';
     const formTaskForEdit = ref(null);
     const dialogDelete = ref(false);
     const taskToDelete = ref(null);
+    
+    // const getServerName= (serverId) => {
+    //   return backendServers.value.find(server => server.id === serverId)?.name || '-';
+    // }
 
-    const getApplicationName = (task = null) => {
-      return applications.value.find(a => Number(a.id) === Number(task.applicationId))?.name || '-';
+    const getServerName = (applicationId) => {
+      
+      const app = backendApplications.value.find(a => a.id === applicationId)
+      if (!app) return '-'
+      
+      const server = backendServers.value.find(s => s.id === app.serverId)
+
+      return server?.name || '-'
+
+      // const app = backendApplications.value.find(app => app.id === applicationId);
+      // if(!app) {return backendServers.value.find(server => server.id === serverId)?.name || '-'}
+      // else { return app.serverId?.name || '-' }
+    }
+
+    const getApplicationName = (applicationId) => {
+      return backendApplications.value.find(app => app.id === applicationId)?.name || '-';
     };
-
-    const getServerName = (task=null) => {
-      return servers.value.find(s => Number(s.id) === Number(task.serverId))?.name || '-';
-    };
-
+    
     const openAddTask = () => {
-    dialogMode.value = 'add';
-    formTaskForEdit.value = {
+      dialogMode.value = 'add';
+      formTaskForEdit.value = {
         id: null,
         name: '',
         description: '',
         serverId: null,
         applicationId: null,
-        owner: '',
+        ownerId: null,
         isActive: true
-    };
-    dialogTaskOpen.value = true;
-    };
+      };
+      dialogTaskOpen.value = true;
+    }; 
 
+    const formatDate = (dateString) => {
+      if (!dateString) return "-"
+
+      return new Date(dateString).toLocaleDateString("pl-PL", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+      })
+    }
     const openEditTask = task => {
-        dialogMode.value = 'edit';
-        formTaskForEdit.value = { ...task };
-        dialogTaskOpen.value = true;
+      dialogMode.value = 'edit';
+      formTaskForEdit.value = 
+      {
+        id: task.id,
+        name: task.name,
+        description: task.description ?? '',
+        serverId: task.serverId ?? null,
+        applicationId: task.applicationId ?? null,
+        ownerId: task.ownerId ?? null,
+        isActive: task.isActive ?? false
+      };
+      dialogTaskOpen.value = true;  
     };
 
-    const handleSaveTask = taskData => {
-        if (dialogMode.value === 'edit') {
-            updateTask(taskData);
-        } else {
-            addTask(taskData);
-        }
-        dialogTaskOpen.value = false;
-        formTaskForEdit.value = null;
+    const handleSaveTask = async taskData => {
+      if (dialogMode.value === 'edit') {
+        await updateTask(taskData);
+      } else {
+        await addTask(taskData);
+      }
+      await getTasks()
+      dialogTaskOpen.value = false;
+      formTaskForEdit.value = {
+        id: task.id,
+        name: task.name,
+        description: task.description ?? '',
+        serverId: task.serverId ?? null,
+        applicationId: task.applicationId ?? null,
+        ownerId: task.ownerId ?? null,
+        isActive: task.isActive ?? false
+      };
     };
 
     const openDeleteDialog = id => {
-        taskToDelete.value = id;
-        dialogDelete.value = true;
+      taskToDelete.value = id;
+      dialogDelete.value = true;
     };
 
-    const confirmDelete = () => {
-        removeTask(taskToDelete.value);
-        dialogDelete.value = false;
-        taskToDelete.value = null;
+    const confirmDelete = async () => {
+      await removeTask(taskToDelete.value);
+      dialogDelete.value = false;
+      taskToDelete.value = null;
     };
+
+    watch(
+      () => backendApplications.value.map(a => a.serverId),
+      () => {
+        getServerName()
+        getApplicationName()
+        updateTask()
+      }
+    )
+
 
 </script>

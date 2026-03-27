@@ -1,6 +1,6 @@
 [
     { "title": { "en": "Name", "pl": "Nazwa"}, "key": "name"},
-    { "title": { "en": "Created at", "pl": "Data utworzenia"}, "key": "createdAt"},
-    { "title": { "en": "Updated at", "pl": "Data aktualizacji"}, "key": "updatedAt"},
+    { "title": { "en": "Created at", "pl": "Data utworzenia"}, "key": "dateOfCreation"},
+    { "title": { "en": "Updated at", "pl": "Data aktualizacji"}, "key": "dateOfUpdate"},
     { "title": { "en": "", "pl": ""}, "key": "actions", "sortable": false}
 ]

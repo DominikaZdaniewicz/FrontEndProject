@@ -1,37 +1,51 @@
-import { useLocalStorage } from '@vueuse/core'
-import applicationsData from '~/assets/data/applications.json'
-
-
 export function useApplications() {
 
-    const applications = useLocalStorage('applications', applicationsData)
+    const backendApplications = ref([])
 
-    function addApplications(application) {
-        applications.value.push({
-            ...application,
-            id: Date.now(),
-            createdAt: new Date ().toISOString().split('T')[0],
-            updatedAt: '-',
-        })
+    async function getApplications() {
+        backendApplications.value = await $fetch('/api/Application/all')
+        return backendApplications.value
     }
 
-    function removeApplications(id) {
-        applications.value = applications.value.filter(a => a.id !== id)
+    async function addApplication(application) {
+        const createdApplication = await $fetch('/api/Application', {
+            method: 'POST',
+            body: application
+        });
+        backendApplications.value.push(createdApplication);
+        return createdApplication;
     }
 
-    function updateApplications(updated) {
-        const index = applications.value.findIndex(s => s.id === updated.id)
+    async function removeApplications(id) {
+        await $fetch(`/api/Application/${id}`, {
+            method: 'DELETE'
+        });
+        backendApplications.value = backendApplications.value.filter(a => a.id !== id);
+    }
 
-        applications.value[index] = {
-            ...updated,
-            updatedAt: new Date ().toISOString().split('T')[0]
-        }
+    async function updateApplications(application) {
+        const updatedApplication = await $fetch(`/api/Application/${application.id}`, {
+            method: 'PUT',
+            body: application
+        });
+        
+        const index = backendApplications.value.findIndex(s => s.id === application.id)
+
+        backendApplications.value[index] = updatedApplication;
+        return updatedApplication;
+    }
+
+    async function getApplicationsBasic() {
+        const data = await $fetch('/api/Application/basic')
+        return ref(data)
     }
 
     return {
-        applications,
-        addApplications,
+        backendApplications,
+        getApplications,
+        addApplication,
         removeApplications,
-        updateApplications
+        updateApplications,
+        getApplicationsBasic
     }
 }

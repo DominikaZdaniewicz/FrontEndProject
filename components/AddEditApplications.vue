@@ -13,7 +13,7 @@
                 ></v-text-field>
                 <v-select 
                     v-model="localApplication.serverId"
-                    :items="servers"
+                    :items="backendServers"
                     item-title="name"
                     item-value="id"
                     :label="$t('serverHeader')"
@@ -24,17 +24,17 @@
                     :label="$t('description')">
                 </v-textarea> 
                 <v-select 
-                    v-model="localApplication.owner"
-                    :items="workers"
+                    v-model="localApplication.ownerId"
+                    :items="owners"
                     item-title="name"
-                    item-value="name"
+                    item-value="id"
                     :label="$t('owner')"
                 ></v-select>
                 <v-checkbox 
                     v-model="localApplication.isActive"
                     :label="$t('status')"
                     hide-details>
-                </v-checkbox>       
+                </v-checkbox>   
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -53,17 +53,19 @@
 
 <script setup>
 import { useServers } from '~/composable/useServers';
-import workersNames from '../assets/data/workers.json';
+import { useOwners } from '~/composable/useOwners';
 
-    const { servers } = useServers();
+    const { getOwners } = await useOwners()
+    const owners = await getOwners()
 
-    const workers = ref(workersNames)
+    const { backendServers, getServers } =  useServers()
+    await getServers()
 
     const props = defineProps({
         modelApplicationValue: Object
     })
 
-    const emit = defineEmits(['save-application', 'cancel-application'])
+    const emit = defineEmits(['save-application', 'cancel-application', 'applications-updated'])
 
     const dialogOpenApplications = ref(false);
 
@@ -109,8 +111,9 @@ import workersNames from '../assets/data/workers.json';
         }
         nameError.value = ''
         serverError.value = ''
-
-        emit('save-application', localApplication.value)        
+        emit('save-application', localApplication.value)
+        emit("applications-updated")
+        dialogOpenApplications.value = false;        
     }
 
     const cancelApplication = () => {

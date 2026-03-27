@@ -9,8 +9,8 @@
     "isActive": true,
     "server": "Main Server",
     "application": "Accounting App",
-    "createdAt": "2026-02-01",
-    "updatedAt": "2026-03-03"
+    "dateOfCreation": "2026-02-01",
+    "dateOfUpdate": "2026-03-03"
   },
   {
     "id": 2,
@@ -22,8 +22,8 @@
     "isActive": true,
     "server": "Backup Server",
     "application": "CRM System",
-    "createdAt": "2026-02-02",
-    "updatedAt": "2026-03-03"
+    "dateOfCreation": "2026-02-02",
+    "dateOfUpdate": "2026-03-03"
   },
   {
     "id": 1772519392216,
@@ -35,8 +35,8 @@
     "isActive": true,
     "server": "Backup Server",
     "application": "CRM System",
-    "createdAt": "2026-03-03",
-    "updatedAt": "2026-03-03"
+    "dateOfCreation": "2026-03-03",
+    "dateOfUpdate": "2026-03-03"
   },
   {
     "id": 1772521887588,
@@ -48,7 +48,7 @@
     "isActive": true,
     "server": "Main Server",
     "application": "Accounting App",
-    "createdAt": "2026-03-03",
-    "updatedAt": "2026-03-03"
+    "dateOfCreation": "2026-03-03",
+    "dateOfUpdate": "2026-03-03"
   }
 ]

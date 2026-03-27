@@ -8,24 +8,30 @@
             </v-btn>
         </div>
         <add-edit-applications
-            :model-application-value="formApplications"
+            :model-application-value="formApplication"
             @save-application="handleSaveApplications"
-            @cancel-application="formApplications = null"
+            @cancel-application="formApplication = null"
         ></add-edit-applications>
         <div class=" mb-4">
             <search-bar :label="$t('search')" v-model="search" />
         </div>
         <v-data-table
             class="rounded-lg"
-            :items="applications"
+            :items="backendApplications"
             :search="search"
             :headers="headers">
+            <template #item.dateOfCreation="{ item }">
+                {{ formatDate(item.dateOfCreation) }}
+            </template>
+            <template #item.dateOfUpdate="{ item }">
+                {{ formatDate(item.dateOfUpdate) }}
+            </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
                     <v-btn 
                         :title="$t('edit')"
                         icon="mdi-pencil"
-                        @click="openEditApplications(item)"
+                        @click="openEditApplication(item)"
                         class="mr-3"
                         :size="40"
                         variant="text"/>
@@ -74,9 +80,18 @@ import AddEditApplications from '~/components/AddEditApplications.vue';
 import headersNames from '../assets/data/headers.json';
 import { useServers } from '~/composable/useServers';
 import { useTasks } from '~/composable/useTasks';
+import { useOwners } from '~/composable/useOwners';
 
-    const { servers } = useServers();
-    const { tasks, updateTask } = useTasks();
+    const { getOwners } = await useOwners()
+    const owners = await getOwners()
+    const emit = defineEmits(['applications-updated'])
+
+    const { backendServers, getServers } = useServers();
+    await getServers();  
+    const { backendApplications, getApplications, addApplication, removeApplications, updateApplications } = useApplications();
+    await getApplications();
+    const { backendTasks, getTasks } = useTasks();
+    await getTasks()
 
     const { locale } = useI18n();
     
@@ -87,31 +102,39 @@ import { useTasks } from '~/composable/useTasks';
     
     const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverId" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
 
-    const { applications, addApplications, removeApplications, updateApplications } = useApplications();
-
     const search = ref('')
 
-    const formApplications = ref(null)
+    const formApplication = ref(null)
 
     const dialog = ref(false)
 
     const applicationToDelete = ref(null)
 
     const openAddApplications = () => {
-        formApplications.value = {
-            id: null,
+        formApplication.value = {
+            Id: null,
             name: '',
-            description: '',
             serverId: null,
-            createdAt: '',
-            updatedAt: '',
-            owner: '',
+            description: '',
+            // DateOfCreation: '',
+            // DateOfUpdate: '',
+            ownerId: null,
             isActive: true
         }
     }
 
+    const formatDate = (dateString) => {
+        if (!dateString) return "-"
+
+        return new Date(dateString).toLocaleDateString("pl-PL", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        })
+    }
+
     const getServerName= (id) => {
-        return servers.value.find(s => s.id === id)?.name || '-'
+        return backendServers.value.find(s => s.id === id)?.name || '-'
     }
 
     const openDeleteDialog = (id) => {
@@ -119,10 +142,10 @@ import { useTasks } from '~/composable/useTasks';
         dialog.value = true
     }
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         const deletedAppId = applicationToDelete.value
-        removeApplications(deletedAppId)
-        tasks.value.forEach(task => {
+        await removeApplications(deletedAppId)
+        backendTasks.value.forEach(task => {
             if (task.applicationId === deletedAppId) {
                 task.application = "-"
                 task.applicationId = null
@@ -132,39 +155,27 @@ import { useTasks } from '~/composable/useTasks';
         applicationToDelete.value = null
     }
 
-    const openEditApplications = (applications) => {
-        formApplications.value = { ...applications }
+    const openEditApplication = (backendApplications) => {
+        formApplication.value = { ...backendApplications }
     }
 
     const closeDialogApplications = () => {
-        formApplications.value = null
+        formApplication.value = null
     }
 
-    const handleSaveApplications = (application) => {
+    const handleSaveApplications = async (application) => {
         if (application.id) {
-            const relatedTasks = tasks.value.filter(
-                task => task.applicationId === application.id
-            )
-            relatedTasks.forEach(task => {
-                task.serverId = application.serverId
-            })
-            updateApplications(application)
-            updateTask(relatedTasks)
+            await updateApplications(application)
+
         } else {
-            addApplications(application)
+            await addApplication(application)
+            
         }
+        await getApplications()
+        emit('applications-updated')  
         closeDialogApplications()
     }
 
-    watch(
-        () => formApplications.value?.serverId,
-        (newVal) => {
-            if (newVal) {
-                
-            }
-        }
-    )
-    
 </script>
 
 <style scoped>

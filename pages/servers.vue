@@ -1,6 +1,6 @@
 <template>
     <client-only>
-        <div class="d-flex justify-end mb-6 mt-8">
+        <div class="d-flex justify-end mb-4 mt-8">
             <v-btn 
                 class="bg-surface-variant" 
                 @click="openAddServer">
@@ -12,16 +12,36 @@
             @save-server="handleSaveServer"
             @cancel-server="formServer = null"
         />
+        <view-server-info
+            :model-server-value="infoServer"
+            @close-server="infoServer = null"
+        />
         <div class=" mb-4">
             <search-bar :label="$t('search')" v-model="search" />
-        </div>        
+        </div> 
         <v-data-table
             class="rounded-lg"
             :headers="headers"
-            :items="servers"
-            :search="search">
+            :items="backendServers"
+            :search="search"
+            :items-per-page-options="itemsPerPageOptions"
+            :items-per-page="itemsPerPage"
+            :page="page">    
+            <template #item.name="{ item }">
+                <span   
+                    @click="openInfoServer(item)" 
+                    class="serverName">
+                    {{ item.name }}
+                </span>    
+            </template>    
             <template #item.description="{ item }">
                 {{ item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
+            </template>
+            <template #item.dateOfCreation="{ item }">
+                {{ formatDate(item.dateOfCreation) }}
+            </template>
+            <template #item.dateOfUpdate="{ item }">
+                {{ formatDate(item.dateOfUpdate) }}
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
@@ -32,36 +52,40 @@
                         class="mr-3"
                         :size="40"
                         variant="text"/>
-                    <v-btn
-                        icon="mdi-delete"
-                        variant="text"
-                        :size="40"
-                        :disabled="isServerUsed(item.id)"
-                        :title="isServerUsed(item.id) ? $t('serverUsed') : $t('delete')"
-                        @click="openDeleteDialog(item.id)"/>
+                    <v-dialog
+                        v-model="dialog"
+                        max-width="500">
+                        <template #activator="{ props }">
+                            <v-btn
+                            v-bind="props"
+                            icon="mdi-delete"
+                            variant="text"
+                            :size="40"
+                            :disabled="isServerUsed(item.id)"
+                            :title="isServerUsed(item.id) ? $t('serverUsed') : $t('delete')"
+                            @click="openDeleteDialog(item.id)"
+                            />
+                        </template>
+                        <v-card
+                            prepend-icon="mdi-alert"
+                            :text="$t('deleteMsg')">
+                            <template #actions>
+                                <v-spacer />
+                                <v-btn
+                                    @click="dialog = false">
+                                    {{ $t('no') }}
+                                </v-btn>
+                                <v-btn
+                                    class="bg-surface-variant"
+                                    @click="confirmDelete">
+                                    {{ $t('yes') }}
+                                </v-btn>
+                            </template>
+                        </v-card>
+                    </v-dialog>
                 </div>
             </template>
         </v-data-table>
-        <v-dialog
-            v-model="dialog"
-            max-width="500">
-            <v-card
-                prepend-icon="mdi-alert"
-                :text="$t('deleteMsg')">
-                <template #actions>
-                    <v-spacer />
-                    <v-btn
-                        @click="dialog = false">
-                        {{ $t('no') }}
-                    </v-btn>
-                    <v-btn
-                        class="bg-surface-variant"
-                        @click="confirmDelete">
-                        {{ $t('yes') }}
-                    </v-btn>
-                </template>
-            </v-card>
-        </v-dialog>
     </client-only>
 </template>
 
@@ -69,12 +93,19 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
+import { useOwners } from '~/composable/useOwners';
+import { useApplications } from '~/composable/useApplications';
+import { useTasks } from '~/composable/useTasks';
 
-    const applications = ref([])
-    const tasks = ref([]);
-
-    const { servers, addServer, removeServer, updateServer } = useServers();
-    console.log(servers)
+    const { getOwners } = await useOwners()
+    const owners = await getOwners()
+    const { backendApplications, getApplications } = useApplications()
+    await getApplications()
+    const { backendTasks, getTasks } =  useTasks()
+    await getTasks()
+    const { backendServers, getServers, addServer, removeServer, updateServer, getServersSummary } =  useServers();    
+    const serversSummary = await getServersSummary()
+    await getServers();  
 
     const { locale } = useI18n();
     
@@ -82,7 +113,7 @@ import headersNames from '../assets/data/headers.json';
         ...h,
         title: h.title[locale.value] 
     }));
-    
+   
     const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('description'), key: "description" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
 
     const search = ref('')
@@ -91,26 +122,45 @@ import headersNames from '../assets/data/headers.json';
 
     const formServer = ref(null)
 
+    const infoServer = ref(null)
     const serverToDelete = ref(null)
 
     const openAddServer = () => {
-        formServer.value = {
-            id: null,
-            name: '',
-            description: '',
-            createdAt: '',
-            updatedAt: '',
-            owner: '',
-            isActive: true
-        }
+        formServer.value = reactive({
+            Id: null,
+            Name: '',
+            Description: '',
+            // dateOfCreation: '',
+            // dateOfUpdate: '',
+            OwnerId: null,
+            IsActive: true
+        })
     }
+
+    const formatDate = (dateString) => {
+        if (!dateString) return "-"
+
+        return new Date(dateString).toLocaleDateString("pl-PL", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric"
+        })
+    }
+
+    const { data: paggination } = await useFetch('/api/Server/paggination')
+
+    const page = ref(1);
+
+    const itemsPerPage = computed(() => paggination.value?.itemsPerPage ?? 10);
+    const itemsPerPageOptions = computed(() => paggination.value?.itemsPerPageOptions ?? [5, 10, 20, 50]);
+
 
     const localServerId = formServer.value?.id;
 
     const isServerUsed = (localServerId) => {
         if (!localServerId) return false
-        const usedInApplications = applications.value?.some(app => Number(app.serverId) === Number(localServerId)) ?? false
-        const usedInTasks = tasks.value?.some(task => Number(task.serverId) === Number(localServerId)) ?? false
+        const usedInApplications = backendApplications.value?.some(app => app.serverId === localServerId) ?? false
+        const usedInTasks = backendTasks.value?.some(task => task.serverId === localServerId) ?? false
 
         return usedInApplications || usedInTasks;
     }
@@ -120,58 +170,48 @@ import headersNames from '../assets/data/headers.json';
         dialog.value = true
     }
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (!serverToDelete.value) return
 
-        const serverObj = servers.value.find(s => s.id === serverToDelete.value)
+        const serverObj = backendServers.value.find(s => s.id === serverToDelete.value)
         if (!serverObj) return
 
-        removeServer(serverToDelete.value)
+        await removeServer(serverToDelete.value)
         dialog.value = false
         serverToDelete.value = null
     }
 
-    const openEditServer = (server) => {
-        const matchedServer = servers.value.find(s => s.name === server.server)
-        formServer.value = { 
-            ...server,
-            id: server.id ?? matchedServer?.id ?? null
-        }
+    const openEditServer = (backendServers) => {
+        formServer.value = { ...backendServers }
+
+    }
+
+    const openInfoServer = (backendServers) => {
+        infoServer.value = { ...backendServers }
     }
 
     const closeDialogServer = () => {
-        formServer.value = null
+        formServer.value = null;
     }
 
-    const handleSaveServer = (server) => {
+    const handleSaveServer = async (server) => {
         
-    if (server.id) {
-        updateServer(server)    
-    } else {
-        addServer(server)        
+        if (server.id) {
+            await updateServer(server)    
+        } else {
+            await addServer(server)      
+        }
+        closeDialogServer()
     }
-
-    closeDialogServer()
-    }
-
-    watchEffect(() => {
-        if (!process.client) return
-
-        const rawApps = JSON.parse(localStorage.getItem('applications') || 'applications.json');
-        const rawTasks = JSON.parse(localStorage.getItem('tasks') || 'tasks.json');
-
-        applications.value = rawApps.map(app => ({
-            ...app,
-            serverId: app.serverId ?? servers.value.find(s => s.name === app.server)?.id ?? null
-        }));
-        tasks.value = rawTasks.map(task => ({
-            ...task,
-            serverId: task.serverId ?? servers.value.find(s => s.name === task.server)?.id ?? null
-        }));
-    })
 
 </script>
 
 <style scoped>
+
+    .serverName:hover {
+    text-decoration: underline;
+    cursor: pointer;
+
+    }
 
 </style>
