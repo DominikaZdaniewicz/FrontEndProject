@@ -6,6 +6,7 @@
   "applicationsNumber": "Number of connected applications",
   "tasksNumber": "Number of connected tasks",
   "appsList": "List of applications",
+  "tasksList": "List of tasks",
   "serversInfoBtn": "Servers Info",
   "serversFullInfo": "Full Info",
   "basicInfo": "Basic Info",
@@ -32,11 +33,13 @@
   "itemsPerPage": "Items per page",
   "language": "Language",
   "description": "Description",
-  "status": "Active",
+  "status": "Status",
   "owner": "Owner",
   "deleteMsg": "Are you sure you want to delete it?",
   "no": "No",
   "yes": "Yes",
   "serverUsed": "This server is being used by an application.",
-  "close": "Close"
+  "close": "Close",
+  "active": "Active",
+  "inactive": "Inactive"
 }

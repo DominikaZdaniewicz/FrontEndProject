@@ -65,7 +65,7 @@
         </div>
       </template>
       <template #item.serverId="{ item }">
-        <span>{{ getServerName(item.applicationId) }}</span>
+        <span>{{ getServerName(item.applicationId, item.serverId) }}</span>
       </template>
       <template #item.applicationId="{ item }">
         <span>{{ getApplicationName(item.applicationId) }}</span>
@@ -117,18 +117,38 @@ import { useI18n } from 'vue-i18n';
     //   return backendServers.value.find(server => server.id === serverId)?.name || '-';
     // }
 
-    const getServerName = (applicationId) => {
+    // const getServerName = (applicationId, taskServerId) => {
       
-      const app = backendApplications.value.find(a => a.id === applicationId)
-      if (!app) return '-'
-      
-      const server = backendServers.value.find(s => s.id === app.serverId)
+    //   const app = backendApplications.value.find(a => a.id === applicationId)
+    //   if (app) {
+    //     const serverFromApp = backendServers.value.find(s => s.id === app.ServerId)
+    //     return serverFromApp?.name
+    //   }
+    //   const serverFromTask = backendServers.value.find(s => s.id === taskServerId)
+    //   return serverFromTask?.name || '-'
+    // }
 
-      return server?.name || '-'
+    const getServerName = (applicationId, taskServerId) => {
 
-      // const app = backendApplications.value.find(app => app.id === applicationId);
-      // if(!app) {return backendServers.value.find(server => server.id === serverId)?.name || '-'}
-      // else { return app.serverId?.name || '-' }
+        const app = backendApplications.value.find(a => a.id === applicationId)
+
+        if (app && app.serverId) {
+            const serverFromApp = backendServers.value.find(
+                s => s.id === app.serverId
+            )
+            if (serverFromApp) {
+                return serverFromApp.name
+            }
+        }
+
+        if (taskServerId) {
+            const serverFromTask = backendServers.value.find(
+                s => s.id === taskServerId
+            )
+            return serverFromTask?.name || '-'
+        }
+
+        return '-'
     }
 
     const getApplicationName = (applicationId) => {

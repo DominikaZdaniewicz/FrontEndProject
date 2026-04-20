@@ -30,7 +30,7 @@
                 <v-text-field
                     readonly
                     variant="plain"
-                    v-model="localServer.isActive"
+                    v-model="isActive"
                     :label="$t('status')"
                 ></v-text-field>
                 <v-text-field
@@ -57,7 +57,7 @@
                 <v-text-field
                     readonly
                     variant="plain"
-                    :value="applicationsList.length ? applicationsList.map(a => a.name).join(', ') : '-'"
+                    :value="applicationsList"
                     :label="$t('appsList')"
                     persistent-placeholder
                 ></v-text-field> 
@@ -67,8 +67,16 @@
                     :value="tasksCount"
                     :label="$t('tasksNumber')"
                     persistent-placeholder
-                ></v-text-field>                 
+                ></v-text-field>
+                <v-text-field
+                    readonly
+                    variant="plain"
+                    :value="tasksList"
+                    :label="$t('tasksList')"
+                    persistent-placeholder
+                ></v-text-field>                  
             </v-card-text>
+            <v-text-field>{{ console.log() }}</v-text-field>
             <v-btn 
                 text 
                 class="mx-6 my-4" 
@@ -84,15 +92,17 @@ import { useOwners } from '~/composable/useOwners';
 import { useServers } from '~/composable/useServers';
 
     const { getOwners } = await useOwners()
-    const { getServersSummary,  } = useServers()
+    const { getServersSummary} = useServers()
     const owners = await getOwners()
 
     const serversSummary = ref([])
     serversSummary.value = await getServersSummary();
     // const serversApps = ref([])
 
+    const isActive = computed(() => {
+        return localServer.value?.isActive ? $t('active') : $t('inactive')
+    })
 
-    
     const props = defineProps({
         modelServerValue: Object
     })
@@ -122,9 +132,25 @@ import { useServers } from '~/composable/useServers';
 
         return server?.tasksNumber ?? 0
     })
-
+    
     const applicationsList = computed(() => {
-        return localServer.value?.applicationList ?? []
+        const id = localServer.value?.id
+        if (!id) return '-'
+
+        const list = serversSummary.value?._rawValue || serversSummary.value
+        const server = list.find(s => s.id === id)
+
+        return server?.applicationsList || '-'
+    })
+
+    const tasksList = computed(() => {
+        const id = localServer.value?.id
+        if (!id) return '-'
+
+        const list = serversSummary.value?._rawValue || serversSummary.value
+        const server = list.find(s => s.id === id)
+
+        return server?.tasksList || '-'
     })
     
     const formatDate = (dateString) => {

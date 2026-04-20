@@ -183,7 +183,6 @@ import { useTasks } from '~/composable/useTasks';
 
     const openEditServer = (backendServers) => {
         formServer.value = { ...backendServers }
-
     }
 
     const openInfoServer = (backendServers) => {
@@ -207,11 +206,9 @@ import { useTasks } from '~/composable/useTasks';
 </script>
 
 <style scoped>
-
     .serverName:hover {
     text-decoration: underline;
     cursor: pointer;
-
     }
 
 </style>

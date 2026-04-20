@@ -6,6 +6,7 @@
   "applicationsNumber": "Ilość przynależnych aplikacji",
   "tasksNumber": "Ilość przynależnych zadań",
   "appsList": "Lista aplikacji",
+  "tasksList": "Lista zadań",
   "serversInfoBtn": "Informacje o serwerach",
   "serversFullInfo": "Pełne informacje",
   "basicInfo": "Podstawowe informacje",
@@ -32,11 +33,13 @@
   "itemsPerPage": "Pozycje na stronę",
   "language": "Język",
   "description": "Opis",
-  "status": "Aktywny",
+  "status": "Status",
   "owner": "Właściciel",
   "deleteMsg": "Na pewno chcesz usunąć?",
   "no": "Nie",
   "yes": "Tak",
   "serverUsed": "Ten serwer jest używany przez aplikację",
-  "close": "Zamknij"
+  "close": "Zamknij",
+  "active": "Aktywny",
+  "inactive": "Nieaktywny"
 }

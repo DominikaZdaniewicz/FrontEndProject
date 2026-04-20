@@ -20,11 +20,11 @@
                     item-value="id"
                     :label="$t('owner')"
                 ></v-select>
-                <v-checkbox 
+                <v-checkbox
                     v-model="localServer.isActive"
                     :label="$t('status')"
-                    hide-details>
-                </v-checkbox>  
+                    hide-details
+                />
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -65,11 +65,27 @@ import { useOwners } from '~/composable/useOwners';
         () => props.modelServerValue,
         (val) => {
             dialogOpenServers.value = !!val;
-            localServer.value = val ? { ...val } : {}
+
+            if (!val) {
+            localServer.value = {};
+            return;
+            }
+
+            if (!val.id) {
+            localServer.value = {
+                ...val,
+                isActive: true
+            };
+            } else {
+            localServer.value = {
+                ...val,
+                isActive: Boolean(val.isActive)
+            };
+            }
         },
         { immediate: true }
-    )
-    
+    );
+
     watch(
         () => localServer.value.name,
         (newVal) => {

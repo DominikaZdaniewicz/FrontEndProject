@@ -100,6 +100,7 @@ import { useOwners } from '~/composable/useOwners';
 
     const nameError = ref('')
     const serverError = ref('')
+    const isInitializing = ref(false)
 
     const displayApplicationName = computed(() => {
         const app = backendApplications.value.find(a => a.id === localTask.value.applicationId)
@@ -108,16 +109,29 @@ import { useOwners } from '~/composable/useOwners';
 
     const filteredApplications = computed(() => {
         if (!localTask.value.serverId) return []
-        return backendApplications.value.filter(
+
+        const apps = backendApplications.value.filter(
             a => a.serverId === localTask.value.serverId
         )
+        const currentApp = backendApplications.value.find(
+            a => a.id === localTask.value.applicationId
+        )
+
+        if (currentApp && !apps.find(a => a.id === currentApp.id)) {
+            return [currentApp, ...apps]
+        }
+
+        return apps
     })
 
     watch(
         () => props.modelTaskValue,
-        task => {
+        async task => {
             if (props.mode === 'edit' && task) {
+            isInitializing.value = true
             localTask.value = { ...task }
+            await nextTick()
+            isInitializing.value = false
             } else {
             localTask.value = emptyTask()
             }
@@ -142,7 +156,8 @@ import { useOwners } from '~/composable/useOwners';
     watch(
         () => localTask.value.serverId,
         (newVal, oldVal) => {
-            if (props.mode === 'add' && newVal !== oldVal) {
+            if (isInitializing.value) return
+            if (newVal !== oldVal) {
                 localTask.value.applicationId = null
             }
         }
