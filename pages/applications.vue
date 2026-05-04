@@ -1,30 +1,86 @@
 <template>
     <client-only>
         <div class="d-flex justify-end mb-6 mt-8">
+            <v-btn
+                @click="openExportApplications">
+                {{ $t('export') }}
+            </v-btn>
             <v-btn 
-                class="bg-surface-variant" 
+                class="ml-8 bg-surface-variant" 
                 @click="openAddApplications">
                 {{ $t("addApplication") }}
             </v-btn>
         </div>
+        <v-dialog v-model="dialogExport" max-width="500">
+            <v-card
+                prepend-icon="mdi-alert"
+                :text="$t('exportMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogExport = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmExportApplications">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
         <add-edit-applications
             :model-application-value="formApplication"
             @save-application="handleSaveApplications"
-            @cancel-application="formApplication = null"
-        ></add-edit-applications>
-        <div class=" mb-4">
-            <search-bar :label="$t('search')" v-model="search" />
+            @cancel-application="formApplication = null"/>
+        <div class="mb-4 d-flex align-center">
+            <v-btn 
+                class="py-7 mr-8 d-flex justify-end"
+                @click="filterMenu = !filterMenu">
+                {{ $t('filter') }}
+            </v-btn>
+            <div class="w-100">
+                <search-bar
+                    class="flex-grow-1"
+                    :label="$t('search')" 
+                    v-model="search" />
+            </div>
         </div>
-        <v-data-table
+        <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
+            <v-select
+                v-model="emptyFilter"
+                hide-details
+                class="mr-6"
+                :items="[
+                { value: 'all', title: $t('all') },
+                { value: 'empty', title: $t('empty') },
+                { value: 'notEmpty', title: $t('notEmpty') },]"/>
+            <v-select
+                v-model="activeFilter"
+                hide-details
+                :items="[
+                { value: 'allActive', title: $t('all') },
+                { value: 'active', title: $t('active') },
+                { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+        <v-data-table-server
             class="rounded-lg"
-            :items="backendApplications"
-            :search="search"
-            :headers="headers">
-            <template #item.dateOfCreation="{ item }">
-                {{ formatDate(item.dateOfCreation) }}
+            :items="applications"
+            :items-length="totalItems"
+            :items-per-page-options="itemsPerPageOptions"
+            v-model:items-per-page="itemsPerPage"
+            v-model:page="page"
+            :headers="headers"
+            v-model:sort-by="sortBy"
+            multi-sort>
+            <template #item.serverName="{ value }">
+                {{ value || '-' }}
             </template>
-            <template #item.dateOfUpdate="{ item }">
-                {{ formatDate(item.dateOfUpdate) }}
+            <template #item.dateOfCreation="{ value }">
+                {{ formatDate(value) }}
+            </template>
+            <template #item.dateOfUpdate="{ value }">
+                {{ formatDate(value) ?? '-' }}
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
@@ -35,42 +91,34 @@
                         class="mr-3"
                         :size="40"
                         variant="text"/>
-                    <v-dialog
-                        v-model="dialog"
-                        max-width="500">
-                        <template #activator="{ props }">
-                            <v-btn
-                            v-bind="props"
-                            icon="mdi-delete"
-                            variant="text"
-                            :size="40"
-                            :title="$t('delete')"
-                            @click="openDeleteDialog(item.id)"
-                            />
-                        </template>
-                        <v-card
-                            prepend-icon="mdi-alert"
-                            :text="$t('deleteMsg')">
-                            <template #actions>
-                                <v-spacer />
-                                <v-btn
-                                    @click="dialog = false">
-                                    {{ $t('no') }}
-                                </v-btn>
-                                <v-btn
-                                    class="bg-surface-variant"
-                                    @click="confirmDelete">
-                                    {{ $t('yes') }}
-                                </v-btn>
-                                </template>
-                        </v-card>
-                    </v-dialog>
+                    <v-btn
+                        icon="mdi-delete"
+                        variant="text"
+                        :size="40"
+                        :disabled="!item.isEmpty"
+                        :title="item.isEmpty ? $t('delete') : $t('applicationUsed')"
+                        @click="openDeleteDialog(item.id)"/>
                 </div>
             </template>
-            <template #item.serverId="{ item }">
-                <span>{{ getServerName(item.serverId)}}</span>
-            </template>
-        </v-data-table>
+        </v-data-table-server>
+        <v-dialog v-model="dialog" max-width="500">
+            <v-card
+                prepend-icon="mdi-alert"
+                :text="$t('deleteMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialog = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmDelete">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
     </client-only>
 </template>
 
@@ -78,48 +126,59 @@
 import { useApplications } from '~/composable/useApplications';
 import AddEditApplications from '~/components/AddEditApplications.vue';
 import headersNames from '../assets/data/headers.json';
-import { useServers } from '~/composable/useServers';
-import { useTasks } from '~/composable/useTasks';
-import { useOwners } from '~/composable/useOwners';
 
-    const { getOwners } = await useOwners()
-    const owners = await getOwners()
     const emit = defineEmits(['applications-updated'])
 
-    const { backendServers, getServers } = useServers();
-    await getServers();  
-    const { backendApplications, getApplications, addApplication, removeApplications, updateApplications } = useApplications();
-    await getApplications();
-    const { backendTasks, getTasks } = useTasks();
-    await getTasks()
+    const { addApplication, removeApplications, updateApplications, paginationApplication, getExportApplications } = useApplications();
 
     const { locale } = useI18n();
+    const page = ref(1)
+    const itemsPerPage = ref(10);
+    const itemsPerPageOptions = [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: 'all', title: $t('all') }];
+    const paginationData = ref(null);
+
+    const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
+
+    const applications = computed(() => paginationData.value?.productPerPage ?? [])
+        
+    const totalItems = computed(() => paginationData.value?.numberOfApplications ?? 0)
     
     const displayedHeaders = headersNames.map(h => ({
         ...h,
-        title: h.title[locale.value] 
+        title: h.title[locale.value],
+        sortable: true
     }));
     
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverId" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('serverHeader'), key: "serverName", sortable: true }, ...displayedHeaders.slice(1)]);
 
     const search = ref('')
+    
+    const filterMenu = ref(true)
+
+    const emptyFilter = ref('all')
+
+    const activeFilter = ref('allActive')
+
+    const sortBy = ref([])
 
     const formApplication = ref(null)
 
     const dialog = ref(false)
+    const dialogExport = ref(false)
 
     const applicationToDelete = ref(null)
 
     const openAddApplications = () => {
         formApplication.value = {
-            Id: null,
+           id: null,
             name: '',
-            serverId: null,
             description: '',
-            // DateOfCreation: '',
-            // DateOfUpdate: '',
+            serverName: '',
+            serverId: null,
             ownerId: null,
-            isActive: true
+            ownerName: '',
+            isActive: true,
+            isEmpty: true
         }
     }
 
@@ -133,30 +192,41 @@ import { useOwners } from '~/composable/useOwners';
         })
     }
 
-    const getServerName= (id) => {
-        return backendServers.value.find(s => s.id === id)?.name || '-'
-    }
+    const reloadPage = async () => {
+        paginationData.value = await paginationApplication
+            (page.value, 
+            resolvedPageSize.value, 
+            search.value, 
+            emptyFilter.value === 'empty', 
+            emptyFilter.value === 'notEmpty', 
+            activeFilter.value,
+            sortBy.value,
+        )}
 
     const openDeleteDialog = (id) => {
         applicationToDelete.value = id
         dialog.value = true
     }
 
+    const openExportApplications = () => {
+        dialogExport.value = true
+    }
+
     const confirmDelete = async () => {
         const deletedAppId = applicationToDelete.value
         await removeApplications(deletedAppId)
-        backendTasks.value.forEach(task => {
-            if (task.applicationId === deletedAppId) {
-                task.application = "-"
-                task.applicationId = null
-            }
-        })
         dialog.value = false
         applicationToDelete.value = null
+        await reloadPage()
+    }    
+    
+    const confirmExportApplications = async () => {
+        await getExportApplications()
+        dialogExport.value = false
     }
 
-    const openEditApplication = (backendApplications) => {
-        formApplication.value = { ...backendApplications }
+    const openEditApplication = (applications) => {
+        formApplication.value = { ...applications }
     }
 
     const closeDialogApplications = () => {
@@ -169,12 +239,28 @@ import { useOwners } from '~/composable/useOwners';
 
         } else {
             await addApplication(application)
-            
         }
-        await getApplications()
+        await reloadPage()
         emit('applications-updated')  
         closeDialogApplications()
     }
+
+    watch(
+        [page, resolvedPageSize],
+        async () => {
+            await reloadPage()
+        },
+        { immediate: true }
+    )
+
+    watch(
+        [search, emptyFilter, activeFilter, sortBy],
+        async () => {
+            page.value = 1
+            await reloadPage()
+        }
+    )
+
 
 </script>
 

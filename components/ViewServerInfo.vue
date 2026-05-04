@@ -1,32 +1,38 @@
 <template>
     <v-dialog v-model="dialogInfoServer" max-width="500px">
-        <v-card v-if="localServer">
+        <v-card v-if="serverDetails">
             <v-card-title class="mx-2 mt-4"> {{$t("serversFullInfo")}} </v-card-title>
             <v-card-text>
                 <v-text-field
                     readonly
                     variant="plain"
-                    v-model="localServer.name"
+                    v-model="serverDetails.name"
                     :label="$t('nameHeader')"
                 ></v-text-field> 
                 <v-textarea
                     readonly
                     variant="plain"
-                    v-model="localServer.description"
+                    v-model="serverDetails.description"
                     auto-grow
                     rows = "1"  
                     aria-modal="8"
                     :label="$t('description')">
                 </v-textarea>
-                <v-select 
+                <v-text-field
                     readonly
                     variant="plain"
-                    v-model="localServer.ownerId"
+                    v-model="serverDetails.ownerName"
+                    :label="$t('owner')"
+                ></v-text-field>
+                <!-- <v-select 
+                    readonly
+                    variant="plain"
+                    v-model="serverDetails.ownerId"
                     :items="owners"
                     item-title="name"
                     item-value="id"
                     :label="$t('owner')"
-                ></v-select>
+                ></v-select> -->             
                 <v-text-field
                     readonly
                     variant="plain"
@@ -36,14 +42,14 @@
                 <v-text-field
                     readonly
                     variant="plain"
-                    :value="formatDate(localServer.dateOfCreation)"
+                    :value="formatDate(serverDetails.dateOfCreation)"
                     :label="$t('createdHeader')"
                     persistent-placeholder
                 ></v-text-field>
                 <v-text-field
                     readonly
                     variant="plain"
-                    :value="formatDate(localServer.dateOfUpdate)"
+                    :value="formatDate(serverDetails.dateOfUpdate)"
                     :label="$t('updatedHeader')"
                     persistent-placeholder
                 ></v-text-field>
@@ -57,7 +63,7 @@
                 <v-text-field
                     readonly
                     variant="plain"
-                    :value="applicationsList"
+                    :model-value="applicationsList"
                     :label="$t('appsList')"
                     persistent-placeholder
                 ></v-text-field> 
@@ -71,12 +77,11 @@
                 <v-text-field
                     readonly
                     variant="plain"
-                    :value="tasksList"
+                    :model-value="tasksList"
                     :label="$t('tasksList')"
                     persistent-placeholder
                 ></v-text-field>                  
             </v-card-text>
-            <v-text-field>{{ console.log() }}</v-text-field>
             <v-btn 
                 text 
                 class="mx-6 my-4" 
@@ -88,19 +93,14 @@
 </template>
 
 <script setup>
-import { useOwners } from '~/composable/useOwners';
 import { useServers } from '~/composable/useServers';
 
-    const { getOwners } = await useOwners()
-    const { getServersSummary} = useServers()
-    const owners = await getOwners()
+    const { getServerDetails } = useServers()
 
-    const serversSummary = ref([])
-    serversSummary.value = await getServersSummary();
-    // const serversApps = ref([])
+    const serverDetails = ref(null)
 
     const isActive = computed(() => {
-        return localServer.value?.isActive ? $t('active') : $t('inactive')
+        return serverDetails.value?.isActive ? $t('active') : $t('inactive')
     })
 
     const props = defineProps({
@@ -109,48 +109,23 @@ import { useServers } from '~/composable/useServers';
 
     const emit = defineEmits(['close-server'])
 
-    const localServer = ref(null)
 
     const dialogInfoServer = ref(false);   
 
     const applicationsCount = computed(() => {
-        const id = localServer.value?.id
-        if (!id) return 0
-
-        const list = serversSummary.value?._rawValue || serversSummary.value
-        const server = list.find(s => s.id === id)
-
-        return server?.applicationsNumber ?? 0
+        return serverDetails.value?.applicationsNumber ?? 0
     })
         
     const tasksCount = computed(() => {
-        const id = localServer.value?.id
-        if (!id) return 0
-
-        const list = serversSummary.value?._rawValue || serversSummary.value
-        const server = list.find(s => s.id === id)
-
-        return server?.tasksNumber ?? 0
+        return serverDetails.value?.tasksNumber ?? 0
     })
     
     const applicationsList = computed(() => {
-        const id = localServer.value?.id
-        if (!id) return '-'
-
-        const list = serversSummary.value?._rawValue || serversSummary.value
-        const server = list.find(s => s.id === id)
-
-        return server?.applicationsList || '-'
+        return serverDetails.value?.applicationsList ?? '-'
     })
 
     const tasksList = computed(() => {
-        const id = localServer.value?.id
-        if (!id) return '-'
-
-        const list = serversSummary.value?._rawValue || serversSummary.value
-        const server = list.find(s => s.id === id)
-
-        return server?.tasksList || '-'
+        return serverDetails.value?.tasksList ?? '-'
     })
     
     const formatDate = (dateString) => {
@@ -170,12 +145,15 @@ import { useServers } from '~/composable/useServers';
 
     watch(
         () => props.modelServerValue,
-        (newServer) => {
-            if (!newServer) return
+        async (newServer) => {
+            if (!newServer?.id) return
 
-            localServer.value = { ...newServer }
+            serverDetails.value = { ...newServer }
             dialogInfoServer.value = true
-    })
+
+            serverDetails.value = await getServerDetails(newServer.id)
+        },
+    )
 
 </script>
 

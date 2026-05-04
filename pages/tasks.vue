@@ -1,35 +1,84 @@
 <template>
   <client-only>
     <div class="d-flex justify-end mb-6 mt-8">
-      <v-btn class="bg-surface-variant" @click="openAddTask">
+      <v-btn
+          @click="openExportTasks">
+          {{ $t('export') }}
+      </v-btn>
+      <v-btn 
+        class="ml-8 bg-surface-variant" 
+        @click="openAddTask">
         {{ $t("addTask") }}
       </v-btn>
     </div>
-
+    <v-dialog v-model="dialogExport" max-width="500">
+        <v-card
+            prepend-icon="mdi-alert"
+            :text="$t('exportMsg')">
+            <template #actions>
+                <v-spacer />
+                <v-btn
+                    @click="dialogExport = false">
+                    {{ $t('no') }}
+                </v-btn>
+                <v-btn
+                    class="bg-surface-variant"
+                    @click="confirmExportTasks">
+                    {{ $t('yes') }}
+                </v-btn>
+            </template>
+        </v-card>
+    </v-dialog>
     <add-edit-tasks
       :mode="dialogMode"
-      :model-task-value="formTaskForEdit"
+      :model-task-value="formTask"
       :dialog-open="dialogTaskOpen"
-      @update:dialogOpen="dialogTaskOpen = $event"
+      @update:dialogOpenTasks="dialogTaskOpen = $event"
       @save-task="handleSaveTask"
-      @cancel-task="dialogTaskOpen = false"
-    />
-
-    <div class="mb-4">
-      <search-bar :label="$t('search')" v-model="search" />
-    </div>
-
-    <v-data-table
+      @cancel-task="dialogTaskOpen = false"/>
+    <div class="mb-4 d-flex align-center">
+            <v-btn 
+                class="py-7 mr-8 d-flex justify-end"
+                @click="filterMenu = !filterMenu">
+                {{ $t('filter') }}
+            </v-btn>
+            <div class="w-100">
+                <search-bar
+                    class="flex-grow-1"
+                    :label="$t('search')" 
+                    v-model="search" />
+            </div>
+        </div>
+        <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
+            <v-select
+                v-model="activeFilter"
+                hide-details
+                :items="[
+                { value: 'allActive', title: $t('all') },
+                { value: 'active', title: $t('active') },
+                { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+    <v-data-table-server
       class="rounded-lg"
+      :items="tasks"
+      :items-length="totalItems"
+      :items-per-page-options="itemsPerPageOptions"
+      v-model:items-per-page="itemsPerPage"
+      v-model:page="page"
       :headers="headers"
-      :items="backendTasks"
-      :search="search"
-    >
-      <template #item.dateOfCreation="{ item }">
-        {{ formatDate(item.dateOfCreation) }}
+      v-model:sort-by="sortBy"
+      multi-sort>
+      <template #item.serverName="{ value }">
+        {{ value || '-' }}
       </template>
-      <template #item.dateOfUpdate="{ item }">
-        {{ formatDate(item.dateOfUpdate) }}
+      <template #item.applicationName="{ value }">
+        {{ value || '-' }}
+      </template>
+      <template #item.dateOfCreation="{ value }">
+        {{ formatDate(value) }}
+      </template>
+      <template #item.dateOfUpdate="{ value }">
+        {{ formatDate(value) }}
       </template>
       <template #item.actions="{ item }">
         <div class="d-flex justify-end">
@@ -64,13 +113,7 @@
           </v-dialog>
         </div>
       </template>
-      <template #item.serverId="{ item }">
-        <span>{{ getServerName(item.applicationId, item.serverId) }}</span>
-      </template>
-      <template #item.applicationId="{ item }">
-        <span>{{ getApplicationName(item.applicationId) }}</span>
-      </template>
-    </v-data-table>
+    </v-data-table-server>
   </client-only>
 </template>
 
@@ -78,87 +121,54 @@
 import { useTasks } from '~/composable/useTasks';
 import AddEditTasks from '~/components/AddEditTasks.vue';
 import headersNames from '../assets/data/headers.json';
-import { useServers } from '~/composable/useServers';
-import { useApplications } from '~/composable/useApplications';
 import { useI18n } from 'vue-i18n';
 
     const { locale, t } = useI18n();
 
+    const page = ref(1)
+    const itemsPerPage = ref(10);
+    const itemsPerPageOptions = [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: 'all', title: $t('all') }];
+    const paginationData = ref(null);
+
+    const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
+
+    const tasks = computed(() => paginationData.value?.productPerPage ?? [])
+        
+    const totalItems = computed(() => paginationData.value?.numberOfApplications ?? 0)
+
     const displayedHeaders = headersNames.map(h => ({
       ...h,
-      title: h.title[locale.value]
+      title: h.title[locale.value],
+      sortable: true
     }));
 
     const headers = ref([
       ...displayedHeaders.slice(0, 1),
-      { title: t('serverHeader'), key: 'serverId' },
-      { title: t('applicationHeader'), key: 'applicationId' },
+      { title: t('serverHeader'), key: 'serverName', sortable: true },
+      { title: t('applicationHeader'), key: 'applicationName', sortable: true },
       ...displayedHeaders.slice(1)
     ]);
 
-    const { backendTasks, getTasks, addTask, removeTask, updateTask } = useTasks();
-    await getTasks();
-        
-    const { backendServers, getServers } = useServers();
-    await getServers();
-    const { backendApplications, getApplications } = useApplications();
-        
-    await getApplications()
+    const { addTask, removeTask, updateTask, paginationTask, getExportTasks } = useTasks();
 
-    const search = ref('');
+    const search = ref('')
+    
+    const filterMenu = ref(true)
+
+    const activeFilter = ref('allActive')
+
+    const sortBy = ref([])
 
     const dialogMode = ref('add');
     const dialogTaskOpen = ref(false);
-    const formTaskForEdit = ref(null);
+    const formTask = ref(null);
     const dialogDelete = ref(false);
     const taskToDelete = ref(null);
-    
-    // const getServerName= (serverId) => {
-    //   return backendServers.value.find(server => server.id === serverId)?.name || '-';
-    // }
+    const dialogExport = ref(false)
 
-    // const getServerName = (applicationId, taskServerId) => {
-      
-    //   const app = backendApplications.value.find(a => a.id === applicationId)
-    //   if (app) {
-    //     const serverFromApp = backendServers.value.find(s => s.id === app.ServerId)
-    //     return serverFromApp?.name
-    //   }
-    //   const serverFromTask = backendServers.value.find(s => s.id === taskServerId)
-    //   return serverFromTask?.name || '-'
-    // }
-
-    const getServerName = (applicationId, taskServerId) => {
-
-        const app = backendApplications.value.find(a => a.id === applicationId)
-
-        if (app && app.serverId) {
-            const serverFromApp = backendServers.value.find(
-                s => s.id === app.serverId
-            )
-            if (serverFromApp) {
-                return serverFromApp.name
-            }
-        }
-
-        if (taskServerId) {
-            const serverFromTask = backendServers.value.find(
-                s => s.id === taskServerId
-            )
-            return serverFromTask?.name || '-'
-        }
-
-        return '-'
-    }
-
-    const getApplicationName = (applicationId) => {
-      return backendApplications.value.find(app => app.id === applicationId)?.name || '-';
-    };
-    
     const openAddTask = () => {
       dialogMode.value = 'add';
-      formTaskForEdit.value = {
-        id: null,
+      formTask.value = {
         name: '',
         description: '',
         serverId: null,
@@ -178,20 +188,21 @@ import { useI18n } from 'vue-i18n';
           year: "numeric"
       })
     }
-    const openEditTask = task => {
-      dialogMode.value = 'edit';
-      formTaskForEdit.value = 
-      {
-        id: task.id,
-        name: task.name,
-        description: task.description ?? '',
-        serverId: task.serverId ?? null,
-        applicationId: task.applicationId ?? null,
-        ownerId: task.ownerId ?? null,
-        isActive: task.isActive ?? false
-      };
-      dialogTaskOpen.value = true;  
-    };
+
+    const reloadPage = async () => {
+    paginationData.value = await paginationTask
+        (page.value, 
+        resolvedPageSize.value, 
+        search.value, 
+        activeFilter.value,
+        sortBy.value,
+    )}
+
+    const openEditTask = (task) => {
+      dialogMode.value = 'edit'
+      formTask.value = { ...task }
+      dialogTaskOpen.value = true
+    }
 
     const handleSaveTask = async taskData => {
       if (dialogMode.value === 'edit') {
@@ -199,17 +210,8 @@ import { useI18n } from 'vue-i18n';
       } else {
         await addTask(taskData);
       }
-      await getTasks()
+      await reloadPage()
       dialogTaskOpen.value = false;
-      formTaskForEdit.value = {
-        id: task.id,
-        name: task.name,
-        description: task.description ?? '',
-        serverId: task.serverId ?? null,
-        applicationId: task.applicationId ?? null,
-        ownerId: task.ownerId ?? null,
-        isActive: task.isActive ?? false
-      };
     };
 
     const openDeleteDialog = id => {
@@ -217,20 +219,38 @@ import { useI18n } from 'vue-i18n';
       dialogDelete.value = true;
     };
 
+    const openExportTasks = () => {
+      dialogExport.value = true
+    }
+
     const confirmDelete = async () => {
       await removeTask(taskToDelete.value);
       dialogDelete.value = false;
       taskToDelete.value = null;
+      await reloadPage()
     };
 
+    const confirmExportTasks = async () => {
+      await getExportTasks()
+      dialogExport.value = false
+    }
+
     watch(
-      () => backendApplications.value.map(a => a.serverId),
-      () => {
-        getServerName()
-        getApplicationName()
-        updateTask()
-      }
+        [page, resolvedPageSize],
+        async () => {
+            await reloadPage()
+        },
+        { immediate: true }
     )
+
+    watch(
+        [search, activeFilter, sortBy],
+        async () => {
+            page.value = 1
+            await reloadPage()
+        }
+    )
+
 
 
 </script>

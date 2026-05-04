@@ -1,6 +1,7 @@
 export function useTasks() {
 
     const backendTasks = ref([])
+    const basicTaskData = ref([])
 
     async function getTasks() {
         backendTasks.value = await $fetch('/api/Task/all')
@@ -39,9 +40,97 @@ export function useTasks() {
         return updatedTask;
     }
 
+    // async function paginationTask(page, pageSize) {
+    //     const dataPagination = await $fetch('/api/Task/pagination', {
+    //         method: 'GET',
+    //         params: { page, pageSize }
+    //     })
+    //     return ref(dataPagination)
+    // }
+
+    async function paginationTask(page, pageSize, search, filterActive, sortBy) {
+        
+        const query = {
+        page,
+        pageSize,
+        filterActive,
+        sortBy
+        }
+
+        if (search) {
+        query.search = search
+        }
+
+        return await $fetch('/api/Task/pagination', {
+            method: 'GET',
+            query
+        })
+    }
+
+    async function paginationBasicTask(page, pageSize, search) {
+        
+        const query = {
+        page,
+        pageSize
+        }
+
+        if (search) {
+        query.search = search
+        }
+
+        return await $fetch('/api/Task/paginationBasic', {
+            method: 'GET',
+            query
+        })
+    }
+
     async function getTasksBasic() {
         const data = await $fetch('/api/Task/basic')
         return ref(data)
+    }
+
+    async function getTasksBasic() {
+        const res = await $fetch('/api/Task/basic')
+
+        basicTaskData.value = Array.isArray(res)
+        ? res
+        : res?.data ?? []
+    }
+
+    async function getTaskEdit(id) {
+        return await $fetch(`/api/Task/${id}`)
+    }
+
+    async function getExportTasks() {
+        const blob = await $fetch('/api/Task/export', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Tasks.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
+    async function getExportBasicTasks() {
+        const blob = await $fetch('/api/Task/exportBasic', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'TasksBasic.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
     }
 
     return {
@@ -50,6 +139,12 @@ export function useTasks() {
         addTask,
         removeTask,
         updateTask,
-        getTasksBasic
+        paginationTask,
+        paginationBasicTask,
+        getTasksBasic,
+        basicTaskData,
+        getTaskEdit,
+        getExportTasks,
+        getExportBasicTasks
     }
 }

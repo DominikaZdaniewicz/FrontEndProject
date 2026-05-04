@@ -1,6 +1,8 @@
 export function useApplications() {
 
     const backendApplications = ref([])
+    const basicApplicationData = ref([])
+    const basicApplicationToTaskData = ref([])
 
     async function getApplications() {
         backendApplications.value = await $fetch('/api/Application/all')
@@ -8,12 +10,10 @@ export function useApplications() {
     }
 
     async function addApplication(application) {
-        const createdApplication = await $fetch('/api/Application', {
+        return await $fetch('/api/Application', {
             method: 'POST',
             body: application
         });
-        backendApplications.value.push(createdApplication);
-        return createdApplication;
     }
 
     async function removeApplications(id) {
@@ -35,10 +35,100 @@ export function useApplications() {
         return updatedApplication;
     }
 
-    async function getApplicationsBasic() {
-        const data = await $fetch('/api/Application/basic')
-        return ref(data)
+    async function paginationApplication(page, pageSize, search, filterEmpty, filterNotEmpty, filterActive, sortBy) {
+        
+        const query = {
+        page,
+        pageSize,
+        filterEmpty,
+        filterNotEmpty,
+        filterActive,
+        sortBy
+        }
+
+        if (search) {
+        query.search = search
+        }
+
+        return await $fetch('/api/Application/pagination', {
+            method: 'GET',
+            query
+        })
     }
+
+    async function paginationBasicApplication(page, pageSize, search) {
+        
+        const query = {
+        page,
+        pageSize
+        }
+
+        if (search) {
+        query.search = search
+        }
+
+        return await $fetch('/api/Application/paginationBasic', {
+            method: 'GET',
+            query
+        })
+    }
+
+    async function getApplicationDetails(id) {
+        return await $fetch(`/api/Application/detail/${id}`)
+    }
+
+    async function getApplicationsBasic() {
+        const res = await $fetch('/api/Application/basic')
+
+        basicApplicationData.value = Array.isArray(res)
+        ? res
+        : res?.data ?? []
+    }
+
+    async function getApplicationsToTask() {
+        const res = await $fetch('/api/Application/toTask')
+
+        basicApplicationToTaskData.value = Array.isArray(res)
+        ? res
+        : res?.data ?? []
+    }
+
+    async function getApplicationEdit(id) {
+        return await $fetch(`/api/Application/${id}`)
+    }
+
+    async function getExportApplications() {
+        const blob = await $fetch('/api/Application/export', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Applications.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
+    async function getExportBasicApplications() {
+        const blob = await $fetch('/api/Application/exportBasic', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'ApplicationsBasic.xlsx'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
 
     return {
         backendApplications,
@@ -46,6 +136,15 @@ export function useApplications() {
         addApplication,
         removeApplications,
         updateApplications,
-        getApplicationsBasic
+        paginationApplication,
+        paginationBasicApplication,
+        getApplicationDetails,
+        getApplicationsBasic,
+        basicApplicationData,
+        getApplicationEdit,
+        getApplicationsToTask,
+        basicApplicationToTaskData,
+        getExportApplications,
+        getExportBasicApplications
     }
 }

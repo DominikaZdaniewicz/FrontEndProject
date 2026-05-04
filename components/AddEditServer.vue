@@ -1,6 +1,6 @@
 <template>
     <v-dialog v-model="dialogOpenServers" max-width="500px">
-        <v-card v-if="localServer">
+        <v-card>
             <v-card-title class="mx-2 mt-4">{{ isEditing ? $t("editText") : $t("addText") }} {{$t("serverHeader")}}</v-card-title>
             <v-card-text>
                 <v-text-field
@@ -20,11 +20,11 @@
                     item-value="id"
                     :label="$t('owner')"
                 ></v-select>
-                <v-checkbox
+                <v-checkbox 
                     v-model="localServer.isActive"
                     :label="$t('status')"
-                    hide-details
-                />
+                    hide-details>
+                </v-checkbox>  
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -43,9 +43,10 @@
 
 <script setup>
 import { useOwners } from '~/composable/useOwners';
+import { useServers } from '~/composable/useServers';
 
-    const { getOwners } = await useOwners()
-    const owners = await getOwners()
+    const { owners, getOwners } = await useOwners()
+    const { getServerEdit } = await useServers()
 
     const props = defineProps({
         modelServerValue: Object
@@ -57,35 +58,43 @@ import { useOwners } from '~/composable/useOwners';
 
     const isEditing = computed(() => !!props.modelServerValue?.id)
 
-    const localServer = ref({})
+    const emptyServer = {
+        name: '',
+        description: '',
+        ownerId: null,
+        isActive: true
+    }
+
+    const localServer = ref({ ...emptyServer })
 
     const nameError = ref('')
 
     watch(
         () => props.modelServerValue,
-        (val) => {
+        async (val) => {
+                        
+            if (val === null) {
+                dialogOpenServers.value = false
+                localServer.value = { ...emptyServer }
+                return
+            }
+
             dialogOpenServers.value = !!val;
-
-            if (!val) {
-            localServer.value = {};
-            return;
+            await getOwners();           
+            
+            if (val.id) {
+                const fullServer = await getServerEdit(val.id)
+                localServer.value = { ...emptyServer, ...fullServer }
             }
-
-            if (!val.id) {
-            localServer.value = {
-                ...val,
-                isActive: true
-            };
-            } else {
-            localServer.value = {
-                ...val,
-                isActive: Boolean(val.isActive)
-            };
+            else {
+                localServer.value = { ...emptyServer }
             }
-        },
+            },
+            
+
         { immediate: true }
-    );
-
+    )
+    
     watch(
         () => localServer.value.name,
         (newVal) => {

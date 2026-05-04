@@ -1,148 +1,143 @@
 <template>
-    <v-dialog
-        :model-value="dialogOpen"
-        @update:model-value="updateDialog"
-        max-width="500px"
-    >
+    <v-dialog 
+        v-model="dialogOpenTasks" 
+        max-width="500px">
         <v-card>
-        <v-card-title class="mx-2 mt-4">
-            {{ mode === 'edit' ? $t('editText') : $t('addText') }} {{ $t('taskHeader') }}
-        </v-card-title>
-        
-
-        <v-card-text>
-            <v-text-field
-                class="mb-2"
-                v-model="localTask.name"
-                :label="$t('taskHeader')"
-                :error-messages="nameError"
-            />
-            <v-select
-                v-model="localTask.serverId"
-                :items="backendServers"
-                item-title="name"
-                item-value="id"
-                :label="$t('serverHeader')"
-                :error-messages="serverError"/>
-            <v-select
-                v-model="localTask.applicationId"
-                :items="filteredApplications"
-                item-title="name"
-                item-value="id"
-                :label="$t('applicationHeader')"
-            >
-                <template #selection>
-                    <span>{{ displayApplicationName }}</span>
-                </template>
-            </v-select>
-            <v-textarea
-                v-model="localTask.description"
-                :label="$t('description')"
-            />
-            <v-select
-                v-model="localTask.ownerId"
-                :items="owners"
-                item-title="name"
-                item-value="id"
-                :label="$t('owner')"
-            />
-            <v-checkbox
-                v-model="localTask.isActive"
-                :label="$t('status')"
-                hide-details
-            />
-        </v-card-text>
-
-        <v-btn class="bg-surface-variant mx-6"  @click="saveTask">
-        {{ mode === 'edit' ? $t('saveEditText') : $t('addText') }}
-        </v-btn>
-        <v-btn class="mx-6 my-4" text @click="cancelTask">{{ $t('cancel') }}</v-btn>
+            <v-card-title class="mx-2 mt-4">
+                {{ isEditing ? $t("editText") : $t("addText") }} {{$t("taskHeader")}}
+            </v-card-title>
+            <v-card-text>
+                <v-text-field
+                    class="mb-2"
+                    v-model="localTask.name"
+                    :label="$t('taskHeader')"
+                    :error-messages="nameError"
+                ></v-text-field>
+                <v-select
+                    v-model="localTask.serverId"
+                    :items="basicServerData"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('serverHeader')"
+                    :error-messages="serverError"/>                   
+                <v-select
+                    v-model="localTask.applicationId"
+                    :items="availableApplications"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('applicationHeader')"/>
+                <v-textarea
+                    v-model="localTask.description"
+                    :label="$t('description')">
+                </v-textarea> 
+                <v-select 
+                    v-model="localTask.ownerId"
+                    :items="owners"
+                    item-title="name"
+                    item-value="id"
+                    :label="$t('owner')"
+                ></v-select>
+                <v-checkbox 
+                    v-model="localTask.isActive"
+                    :label="$t('status')"
+                    hide-details>
+                </v-checkbox>   
+            </v-card-text>
+            <v-btn 
+                class="bg-surface-variant mx-6" 
+                @click="saveTask"> 
+                {{ isEditing ? $t("saveEditText") : $t("addText") }} 
+            </v-btn>
+            <v-btn 
+                text 
+                class="mx-6 my-4" 
+                @click="cancelTask">
+                {{ $t('cancel') }}
+            </v-btn>
         </v-card>
     </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch, computed } from 'vue'
-import { useServers } from '~/composable/useServers'
-import { useApplications } from '~/composable/useApplications'
-import { useTasks } from '~/composable/useTasks'
+import { useApplications } from '~/composable/useApplications';
 import { useOwners } from '~/composable/useOwners';
+import { useServers } from '~/composable/useServers';
+import { useTasks } from '~/composable/useTasks';
 
-    const { getOwners } = await useOwners()
-    const owners = await getOwners()
+    const { owners, getOwners } = useOwners() 
+    const { getTaskEdit } = useTasks()
+    const { basicServerData, getServersBasic } = useServers()
+    const { basicApplicationData, basicApplicationToTaskData, getApplicationsBasic, getApplicationsToTask } = useApplications()
 
     const props = defineProps({
-        mode: { type: String, required: true },
         modelTaskValue: Object,
         dialogOpen: Boolean
     })
-    const { getTasks } = useTasks();
-    await getTasks();
-    const { backendServers, getServers } = useServers()
-    await getServers()
+    const emit = defineEmits(['save-task', 'cancel-task', 'update:dialogOpenTasks'])
 
-    const { backendApplications, getApplications } = useApplications()
-    await getApplications()
+    const dialogOpenTasks = ref(false);
 
-    const emit = defineEmits(['save-task', 'cancel-task', 'update:dialogOpen'])
+    const isEditing = computed(() => !!props.modelTaskValue?.id)
 
-    const emptyTask = () => ({
-        id: null,
+    const localTask = ref({})
+
+    const nameError = ref('')
+    const serverError = ref('')
+
+    const emptyTask = {
         name: '',
         description: '',
         serverId: null,
         applicationId: null,
         ownerId: null,
         isActive: true
+    }
+
+    const availableApplications =  computed(() => {
+        if (!localTask.value?.serverId) {
+            getApplicationsBasic();
+            return basicApplicationData.value
+        };
+        return basicApplicationToTaskData.value?.filter(a => a.serverId === localTask.value.serverId) ?? []
     })
 
-    const localTask = ref({ ...emptyTask() })
-
-    const nameError = ref('')
-    const serverError = ref('')
-    const isInitializing = ref(false)
-
-    const displayApplicationName = computed(() => {
-        const app = backendApplications.value.find(a => a.id === localTask.value.applicationId)
-        return app?.name || '-'
-    })
-
-    const filteredApplications = computed(() => {
-        if (!localTask.value.serverId) return []
-
-        const apps = backendApplications.value.filter(
-            a => a.serverId === localTask.value.serverId
-        )
-        const currentApp = backendApplications.value.find(
-            a => a.id === localTask.value.applicationId
-        )
-
-        if (currentApp && !apps.find(a => a.id === currentApp.id)) {
-            return [currentApp, ...apps]
-        }
-
-        return apps
-    })
 
     watch(
         () => props.modelTaskValue,
-        async task => {
-            if (props.mode === 'edit' && task) {
-            isInitializing.value = true
-            localTask.value = { ...task }
-            await nextTick()
-            isInitializing.value = false
-            } else {
-            localTask.value = emptyTask()
+        async (val) => {
+                        
+            if (val === null) {
+                dialogOpenTasks.value = false
+                localTask.value = { ...emptyTask }
+                return
             }
-        },
-        { immediate: true, deep: true }
-    )
 
+            dialogOpenTasks.value = !!val;
+            await getOwners();   
+            await getServersBasic();     
+            await getApplicationsToTask();
+            if (!props.modelTaskValue) return
+
+            console.log(basicApplicationToTaskData.value)
+            
+            if (val.id) {
+                const fullTask = await getTaskEdit(val.id)
+                localTask.value = { ...emptyTask, ...fullTask }
+            }
+            else {
+                localTask.value = { ...emptyTask }
+            }
+            },
+
+        { immediate: true }
+    )
+    
     watch(
-        () => localTask.value.name, 
-        val => {
-            if (val?.trim()) nameError.value = ''
+        () => localTask.value.name,
+        (newVal) => {
+            if (newVal?.trim()) {
+                nameError.value = ''
+            }
         }
     )
 
@@ -153,63 +148,27 @@ import { useOwners } from '~/composable/useOwners';
         }
     )
 
-    watch(
-        () => localTask.value.serverId,
-        (newVal, oldVal) => {
-            if (isInitializing.value) return
-            if (newVal !== oldVal) {
-                localTask.value.applicationId = null
-            }
-        }
-    )
-
-    const updateDialog = (val) => {
-        emit('update:dialogOpen', val)
-    }
-
-    const saveTask = async () => {
+    const saveTask = () => {
         if (!localTask.value.name?.trim()) {
-            nameError.value = $t('nameError')
+            nameError.value = $t('nameError');
+            return 
+        } else if(!localTask.value.serverId){
+            serverError.value = $t('serverError');
             return
         }
-
-        if (!localTask.value.serverId && !localTask.value.applicationId) {
-            serverError.value = $t('serverError')
-            return
-        }
-
-        const app = backendApplications.value.find(
-            a => a.id === localTask.value.applicationId
-        )
-        if (app) {
-            localTask.value.serverId = app.serverId
-        }
-
-        emit('save-task', { ...localTask.value })
-
         nameError.value = ''
         serverError.value = ''
-
-        emit('update:dialogOpen', false)
+        emit('save-task', localTask.value)
+        emit('update:dialogOpenTasks', false)
+        dialogOpenTasks.value = false
     }
 
     const cancelTask = () => {
-        emit('cancel-task')
         nameError.value = ''
         serverError.value = ''
-        emit('update:dialogOpen', false)
+        emit('cancel-task')
+        emit('update:dialogOpenTasks', false)
+        dialogOpenTasks.value = false
     }
-        
-    watch(
-        () => localTask.value.applicationId,
-        (newAppId) => {
-            if (!newAppId) return
-
-            const app = backendApplications.value.find(a => a.id === newAppId)
-            if (app) {
-            localTask.value.serverId = app.serverId
-            }
-        }
-    )
 
 </script>

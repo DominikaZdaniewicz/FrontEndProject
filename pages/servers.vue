@@ -1,12 +1,35 @@
 <template>
     <client-only>
-        <div class="d-flex justify-end mb-4 mt-8">
+
+        <div class="d-flex justify-end mb-6 mt-8">
+            <v-btn
+                @click="openExportServers">
+                {{ $t('export') }}
+            </v-btn>
             <v-btn 
-                class="bg-surface-variant" 
+                class="ml-8 bg-surface-variant" 
                 @click="openAddServer">
                 {{ $t("addServer") }}
             </v-btn>
         </div>
+        <v-dialog v-model="dialogExport" max-width="500">
+            <v-card
+                prepend-icon="mdi-alert"
+                :text="$t('exportMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogExport = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmExportServers">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
         <add-edit-server
             :model-server-value="formServer"
             @save-server="handleSaveServer"
@@ -16,32 +39,61 @@
             :model-server-value="infoServer"
             @close-server="infoServer = null"
         />
-        <div class=" mb-4">
-            <search-bar :label="$t('search')" v-model="search" />
-        </div> 
-        <v-data-table
+        <div class="mb-4 d-flex align-center">
+            <v-btn 
+                class="py-7 mr-8 d-flex justify-end"
+                @click="filterMenu = !filterMenu">
+                {{ $t('filter') }}
+            </v-btn>
+            <div class="w-100">
+                <search-bar
+                    class="flex-grow-1"
+                    :label="$t('search')" 
+                    v-model="search" />
+            </div>
+        </div>
+        <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
+            <v-select
+                v-model="emptyFilter"
+                hide-details
+                class="mr-6"
+                :items="[
+                { value: 'all', title: $t('all') },
+                { value: 'empty', title: $t('empty') },
+                { value: 'notEmpty', title: $t('notEmpty') },]"/>
+            <v-select
+                v-model="activeFilter"
+                hide-details
+                :items="[
+                { value: 'allActive', title: $t('all') },
+                { value: 'active', title: $t('active') },
+                { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+        <v-data-table-server
             class="rounded-lg"
             :headers="headers"
-            :items="backendServers"
-            :search="search"
+            :items="servers"
+            :items-length="totalItems"
             :items-per-page-options="itemsPerPageOptions"
-            :items-per-page="itemsPerPage"
-            :page="page">    
-            <template #item.name="{ item }">
-                <span   
+            v-model:items-per-page="itemsPerPage"
+            v-model:page="page"
+            v-model:sort-by="sortBy"
+            multi-sort>
+            <template #item.name ="{ item }">
+                <span 
                     @click="openInfoServer(item)" 
                     class="serverName">
                     {{ item.name }}
-                </span>    
-            </template>    
+                </span>
+            </template>
             <template #item.description="{ item }">
-                {{ item.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
+                {{ item?.description ? item.description.slice(0, 50) + (item.description.length > 50 ? '...' : '') : '' }}
             </template>
-            <template #item.dateOfCreation="{ item }">
-                {{ formatDate(item.dateOfCreation) }}
+            <template #item.dateOfCreation="{ value }">
+                {{ formatDate(value) }}
             </template>
-            <template #item.dateOfUpdate="{ item }">
-                {{ formatDate(item.dateOfUpdate) }}
+            <template #item.dateOfUpdate="{ value }">
+                {{ formatDate(value) ?? '-' }}
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end">
@@ -52,40 +104,34 @@
                         class="mr-3"
                         :size="40"
                         variant="text"/>
-                    <v-dialog
-                        v-model="dialog"
-                        max-width="500">
-                        <template #activator="{ props }">
-                            <v-btn
-                            v-bind="props"
-                            icon="mdi-delete"
-                            variant="text"
-                            :size="40"
-                            :disabled="isServerUsed(item.id)"
-                            :title="isServerUsed(item.id) ? $t('serverUsed') : $t('delete')"
-                            @click="openDeleteDialog(item.id)"
-                            />
-                        </template>
-                        <v-card
-                            prepend-icon="mdi-alert"
-                            :text="$t('deleteMsg')">
-                            <template #actions>
-                                <v-spacer />
-                                <v-btn
-                                    @click="dialog = false">
-                                    {{ $t('no') }}
-                                </v-btn>
-                                <v-btn
-                                    class="bg-surface-variant"
-                                    @click="confirmDelete">
-                                    {{ $t('yes') }}
-                                </v-btn>
-                            </template>
-                        </v-card>
-                    </v-dialog>
+                    <v-btn
+                        icon="mdi-delete"
+                        variant="text"
+                        :size="40"
+                        :disabled="!item.isEmpty"
+                        :title="item.isEmpty ? $t('delete') : $t('serverUsed')"
+                        @click="openDeleteDialog(item.id)"/>
                 </div>
             </template>
-        </v-data-table>
+        </v-data-table-server>
+        <v-dialog v-model="dialog" max-width="500">
+            <v-card
+                prepend-icon="mdi-alert"
+                :text="$t('deleteMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialog = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmDelete">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
     </client-only>
 </template>
 
@@ -93,104 +139,111 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
-import { useOwners } from '~/composable/useOwners';
-import { useApplications } from '~/composable/useApplications';
-import { useTasks } from '~/composable/useTasks';
-
-    const { getOwners } = await useOwners()
-    const owners = await getOwners()
-    const { backendApplications, getApplications } = useApplications()
-    await getApplications()
-    const { backendTasks, getTasks } =  useTasks()
-    await getTasks()
-    const { backendServers, getServers, addServer, removeServer, updateServer, getServersSummary } =  useServers();    
-    const serversSummary = await getServersSummary()
-    await getServers();  
 
     const { locale } = useI18n();
     
+    const { addServer, removeServer, updateServer, paginationServer, getExportServers } =  useServers();    
+
+    const page = ref(1)
+    const itemsPerPage = ref(10);
+    const itemsPerPageOptions = [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: 'all', title: $t('all') }];
+    const paginationData = ref(null);
+
+    const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
+
+    const servers = computed(() => paginationData.value?.productPerPage ?? [])
+        
+    const totalItems = computed(() => paginationData.value?.numberOfServers ?? 0)
+
     const displayedHeaders = headersNames.map(h => ({
         ...h,
-        title: h.title[locale.value] 
+        title: h.title[locale.value],
+        sortable: true
     }));
    
-    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('description'), key: "description" }, { title: ' ', key: "empty" }, ...displayedHeaders.slice(1)]);
+    const headers = ref([...displayedHeaders.slice(0, 1), { title: $t('description'), key: "description", sortable: true}, ...displayedHeaders.slice(1)]);
 
     const search = ref('')
 
+    const filterMenu = ref(true)
+
+    const emptyFilter = ref('all')
+
+    const activeFilter = ref('allActive')
+
+    const sortBy = ref([])
+
     const dialog = ref(false)
+    const dialogExport = ref(false)
 
     const formServer = ref(null)
 
     const infoServer = ref(null)
+
     const serverToDelete = ref(null)
 
     const openAddServer = () => {
         formServer.value = reactive({
-            Id: null,
-            Name: '',
-            Description: '',
-            // dateOfCreation: '',
-            // dateOfUpdate: '',
-            OwnerId: null,
-            IsActive: true
+            id: null,
+            name: '',
+            description: '',
+            ownerId: null,
+            ownerName: '',
+            isActive: true,
         })
     }
 
     const formatDate = (dateString) => {
         if (!dateString) return "-"
 
-        return new Date(dateString).toLocaleDateString("pl-PL", {
+        return new Date(dateString).toLocaleString("pl-PL", {
             day: "2-digit",
             month: "2-digit",
-            year: "numeric"
+            year: "numeric",
         })
     }
 
-    const { data: paggination } = await useFetch('/api/Server/paggination')
-
-    const page = ref(1);
-
-    const itemsPerPage = computed(() => paggination.value?.itemsPerPage ?? 10);
-    const itemsPerPageOptions = computed(() => paggination.value?.itemsPerPageOptions ?? [5, 10, 20, 50]);
-
-
-    const localServerId = formServer.value?.id;
-
-    const isServerUsed = (localServerId) => {
-        if (!localServerId) return false
-        const usedInApplications = backendApplications.value?.some(app => app.serverId === localServerId) ?? false
-        const usedInTasks = backendTasks.value?.some(task => task.serverId === localServerId) ?? false
-
-        return usedInApplications || usedInTasks;
-    }
+    const reloadPage = async () => {
+        paginationData.value = await paginationServer(
+            page.value, 
+            resolvedPageSize.value, 
+            search.value, 
+            emptyFilter.value === 'empty', 
+            emptyFilter.value === 'notEmpty', 
+            activeFilter.value,
+            sortBy.value,
+        )}
 
     const openDeleteDialog = (localServerId) => {
         serverToDelete.value = localServerId;
         dialog.value = true
     }
 
+    const openExportServers = () => {
+        dialogExport.value = true
+    }
+
     const confirmDelete = async () => {
         if (!serverToDelete.value) return
 
-        const serverObj = backendServers.value.find(s => s.id === serverToDelete.value)
-        if (!serverObj) return
-
-        await removeServer(serverToDelete.value)
+        await removeServer(serverToDelete.value);
+        await reloadPage();
         dialog.value = false
         serverToDelete.value = null
+        await reloadPage()
     }
 
-    const openEditServer = (backendServers) => {
-        formServer.value = { ...backendServers }
+    const confirmExportServers = async () => {
+        await getExportServers()
+        dialogExport.value = false
     }
 
-    const openInfoServer = (backendServers) => {
-        infoServer.value = { ...backendServers }
+    const openEditServer = (servers) => {
+        formServer.value = { ...servers }
     }
-
-    const closeDialogServer = () => {
-        formServer.value = null;
+    
+    const openInfoServer = (servers) => {
+        infoServer.value = { ...servers }
     }
 
     const handleSaveServer = async (server) => {
@@ -200,8 +253,25 @@ import { useTasks } from '~/composable/useTasks';
         } else {
             await addServer(server)      
         }
-        closeDialogServer()
+            await reloadPage();
+            formServer.value = null;
     }
+
+    watch(
+        [page, resolvedPageSize],
+        async () => {
+            await reloadPage()
+        },
+        { immediate: true }
+    )
+
+    watch(
+        [search, emptyFilter, activeFilter, sortBy],
+        async () => {
+            page.value = 1
+            await reloadPage()
+        }
+    )
 
 </script>
 

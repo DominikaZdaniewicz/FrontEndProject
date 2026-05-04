@@ -11,14 +11,14 @@
                     :label="$t('applicationHeader')"
                     :error-messages="nameError"
                 ></v-text-field>
-                <v-select 
+                <v-select
                     v-model="localApplication.serverId"
-                    :items="backendServers"
+                    :items="basicServerData"
                     item-title="name"
                     item-value="id"
                     :label="$t('serverHeader')"
                     :error-messages="serverError"
-                ></v-select>
+                    />              
                 <v-textarea
                     v-model="localApplication.description"
                     :label="$t('description')">
@@ -52,19 +52,17 @@
 </template>
 
 <script setup>
-import { useServers } from '~/composable/useServers';
+import { useApplications } from '~/composable/useApplications';
 import { useOwners } from '~/composable/useOwners';
+import { useServers } from '~/composable/useServers';
 
-    const { getOwners } = await useOwners()
-    const owners = await getOwners()
-
-    const { backendServers, getServers } =  useServers()
-    await getServers()
+    const { owners, getOwners } = useOwners() 
+    const { getApplicationEdit } = useApplications()
+    const { basicServerData, getServersBasic } = useServers()
 
     const props = defineProps({
         modelApplicationValue: Object
     })
-
     const emit = defineEmits(['save-application', 'cancel-application', 'applications-updated'])
 
     const dialogOpenApplications = ref(false);
@@ -76,12 +74,39 @@ import { useOwners } from '~/composable/useOwners';
     const nameError = ref('')
     const serverError = ref('')
 
+    const emptyApplication = {
+        name: '',
+        description: '',
+        serverId: null,
+        ownerId: null,
+        isActive: true
+    }
+
     watch(
         () => props.modelApplicationValue,
-        (val) => {
+        async (val) => {
+                        
+            if (val === null) {
+                dialogOpenApplications.value = false
+                localApplication.value = { ...emptyApplication }
+                return
+            }
+
             dialogOpenApplications.value = !!val;
-            localApplication.value = val ? { ...val } : {}
-        },
+            await getOwners();   
+            await getServersBasic();     
+
+            if (!props.modelApplicationValue) return
+            
+            if (val.id) {
+                const fullApplication = await getApplicationEdit(val.id)
+                localApplication.value = { ...emptyApplication, ...fullApplication }
+            }
+            else {
+                localApplication.value = { ...emptyApplication }
+            }
+            },
+
         { immediate: true }
     )
     
