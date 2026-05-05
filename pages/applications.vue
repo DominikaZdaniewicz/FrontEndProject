@@ -134,14 +134,14 @@ import headersNames from '../assets/data/headers.json';
     const { locale } = useI18n();
     const page = ref(1)
     const itemsPerPage = ref(10);
-    const itemsPerPageOptions = [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: 'all', title: $t('all') }];
+    const totalItems = computed(() => paginationData.value?.numberOfApplications ?? 0)
+    const itemsPerPageOptions = computed(() => [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: totalItems.value, title: $t('all') }]);
     const paginationData = ref(null);
 
     const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
 
     const applications = computed(() => paginationData.value?.productPerPage ?? [])
         
-    const totalItems = computed(() => paginationData.value?.numberOfApplications ?? 0)
     
     const displayedHeaders = headersNames.map(h => ({
         ...h,

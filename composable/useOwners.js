@@ -23,20 +23,17 @@ export function useOwners() {
         window.URL.revokeObjectURL(url)
     }
 
-    async function paginationBasicOwner(page, pageSize, search) {
+    async function paginationBasicOwner(page, pageSize, search, sortByBasic) {
         
-        const query = {
-        page,
-        pageSize
-        }
-
-        if (search) {
-        query.search = search
-        }
-
         return await $fetch('/api/Owner/paginationBasic', {
-            method: 'GET',
-            query
+            method: 'POST',
+            body: 
+            {
+                page,
+                pageSize,
+                search,
+                sortBy: sortByBasic
+            }
         })
     }
 

@@ -40,53 +40,32 @@ export function useTasks() {
         return updatedTask;
     }
 
-    // async function paginationTask(page, pageSize) {
-    //     const dataPagination = await $fetch('/api/Task/pagination', {
-    //         method: 'GET',
-    //         params: { page, pageSize }
-    //     })
-    //     return ref(dataPagination)
-    // }
-
     async function paginationTask(page, pageSize, search, filterActive, sortBy) {
         
-        const query = {
-        page,
-        pageSize,
-        filterActive
-        }
-
-        if (search) {
-        query.search = search
-        }
-
-        if (Array.isArray(sortBy)) {
-            sortBy.forEach((s, index) => {
-                query[`sortBy[${index}].key`] = s.key
-                query[`sortBy[${index}].order`] = s.order
-            })
-        }
-
         return await $fetch('/api/Task/pagination', {
-            method: 'GET',
-            query
+            method: 'POST',
+            body: 
+            {
+                page,
+                pageSize,
+                search,
+                filterActive,
+                sortBy
+            }
         })
     }
 
-    async function paginationBasicTask(page, pageSize, search) {
+    async function paginationBasicTask(page, pageSize, search, sortByBasic) {
         
-        const query = {
-        page,
-        pageSize
-        }
-
-        if (search) {
-        query.search = search
-        }
-
         return await $fetch('/api/Task/paginationBasic', {
-            method: 'GET',
-            query
+            method: 'POST',
+            body: 
+            {
+                page,
+                pageSize,
+                search,
+                sortBy: sortByBasic
+            }
         })
     }
 

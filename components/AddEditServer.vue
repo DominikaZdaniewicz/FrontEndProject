@@ -45,8 +45,8 @@
 import { useOwners } from '~/composable/useOwners';
 import { useServers } from '~/composable/useServers';
 
-    const { owners, getOwners } = await useOwners()
-    const { getServerEdit } = await useServers()
+    const { owners, getOwners } = useOwners()
+    const { getServerEdit } = useServers()
 
     const props = defineProps({
         modelServerValue: Object

@@ -3,7 +3,6 @@
         <div class="mt-8">
             <search-bar :label="$t('search')" v-model="search" />
         </div>
-        <div> {{ console.log('servers', servers) }}</div>
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('serversBtn') }}</h2>
             <v-btn
@@ -29,14 +28,17 @@
                 </template>
             </v-card>
         </v-dialog>
-        <v-data-table
+        <v-data-table-server
             class="rounded-lg mt-8 pl-4 pr-4 small-columns"
+            :headers="headers"
             :items="servers"
             :search="search"
-            :items-per-page-options="itemsPerPageOptions"
-            :items-per-page="itemsPerPageS"
-            :page="pageS"
-            />
+            v-model:items-per-page="itemsPerPageS"
+            :items-per-page-options="itemsPerPageOptionsS"
+            :items-length="totalItemsS"
+            v-model:page="pageS"
+            v-model:sort-by="sortByBasicS"
+            multi-sort/>
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('applicationsBtn') }}</h2>
             <v-btn
@@ -62,14 +64,17 @@
                 </template>
             </v-card>
         </v-dialog>
-        <v-data-table
+        <v-data-table-server
             class="rounded-lg mt-8 pl-4 pr-4 small-columns"
+            :headers="headers"
             :items="applications"
             :search="search"
-            :items-per-page-options="itemsPerPageOptions"
-            :items-per-page="itemsPerPageA"
-            :page="pageA"
-            />
+            :items-per-page-options="itemsPerPageOptionsA"
+            v-model:items-per-page="itemsPerPageA"
+            :items-length="totalItemsA"
+            v-model:page="pageA"
+            v-model:sort-by="sortByBasicA"
+            multi-sort/> 
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('tasksBtn') }}</h2>
             <v-btn
@@ -95,14 +100,17 @@
                 </template>
             </v-card>
         </v-dialog>
-        <v-data-table
+        <v-data-table-server
             class="rounded-lg mt-8 pl-4 pr-4 small-columns"
+            :headers="headers"
             :items="tasks"
             :search="search"
-            :items-per-page-options="itemsPerPageOptions"
-            :items-per-page="itemsPerPageT"
-            :page="pageT"
-            /> 
+            :items-per-page-options="itemsPerPageOptionsT"
+            v-model:items-per-page="itemsPerPageT"
+            :items-length="totalItemsT"
+            v-model:page="pageT"
+            v-model:sort-by="sortByBasicT"
+            multi-sort/> 
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('ownersBtn') }}</h2>
             <v-btn
@@ -128,14 +136,17 @@
                 </template>
             </v-card>
         </v-dialog>
-        <v-data-table
+        <v-data-table-server
             class="rounded-lg mt-8 pl-4 pr-4 small-columns"
+            :headers="headers"
             :items="owners"
             :search="search"
-            :items-per-page-options="itemsPerPageOptions"
-            :items-per-page="itemsPerPageO"
-            :page="pageO"
-            /> 
+            :items-per-page-options="itemsPerPageOptionsO"
+            v-model:items-per-page="itemsPerPageO"
+            v-model:page="pageO"
+            :items-length="totalItemsO"
+            v-model:sort-by="sortByBasicO"
+            multi-sort/> 
     </client-only>
 </template>
 
@@ -152,10 +163,18 @@ import { useOwners } from '~/composable/useOwners';
 
     const { locale } = useI18n();
 
+    const sortByBasicS = ref([])
+    const sortByBasicA = ref([])
+    const sortByBasicT = ref([])
+    const sortByBasicO = ref([])
+
     const dialogServersExport = ref(false)
     const dialogApplicationsExport = ref(false)
     const dialogTasksExport = ref(false)
     const dialogOwnersExport = ref(false)
+
+    const headers = [{ title: 'Id', key: 'id', sortable: true }, { title: $t('nameHeader'), key: 'name', sortable: true }]
+
     const openExportServers = () => {
         dialogServersExport.value = true
     }
@@ -168,6 +187,7 @@ import { useOwners } from '~/composable/useOwners';
     const openExportOwners = () => {
         dialogOwnersExport.value = true
     }
+
     const confirmExportServers = async () => {
         await getExportBasicServers()
         dialogServersExport.value = false
@@ -184,6 +204,7 @@ import { useOwners } from '~/composable/useOwners';
         await getExportBasicOwners()
         dialogOwnersExport.value = false
     }
+    
     const pageS = ref(1)
     const pageA = ref(1)
     const pageT = ref(1)
@@ -216,21 +237,86 @@ import { useOwners } from '~/composable/useOwners';
     const tasks = computed(() => paginationT.value?.tasksPerPage ?? [])
     const owners = computed(() => paginationO.value?.ownersPerPage ?? [])
 
-    const itemsPerPageOptions = [{ value: 5, title: 5 }, { value: 15, title: 15 }, { value: 'all', title: $t('all') }];
+    const itemsPerPageOptionsS = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsS.value, title: $t('all') }]);
+    const itemsPerPageOptionsA = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsA.value, title: $t('all') }]);
+    const itemsPerPageOptionsT = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsT.value, title: $t('all') }]);
+    const itemsPerPageOptionsO = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsO.value, title: $t('all') }]);
 
-    const reloadPage = async () => {
-        paginationS.value = await paginationBasicServer(pageS.value, resolvedPageSizeS.value, search.value)
-        paginationA.value = await paginationBasicApplication(pageA.value, resolvedPageSizeA.value, search.value)
-        paginationT.value = await paginationBasicTask(pageT.value, resolvedPageSizeT.value, search.value)
-        paginationO.value = await paginationBasicOwner(pageO.value, resolvedPageSizeO.value, search.value)
+    const reloadPageS = async () => {
+        paginationS.value = await paginationBasicServer(pageS.value, resolvedPageSizeS.value, search.value, sortByBasicS.value)
+    }
+    const reloadPageA = async () => {
+        paginationA.value = await paginationBasicApplication(pageA.value, resolvedPageSizeA.value, search.value, sortByBasicA.value)
+    }
+    const reloadPageT = async () => {
+        paginationT.value = await paginationBasicTask(pageT.value, resolvedPageSizeT.value, search.value, sortByBasicT.value)
+    }
+    const reloadPageO = async () => {
+        paginationO.value = await paginationBasicOwner(pageO.value, resolvedPageSizeO.value, search.value, sortByBasicO.value)
     }
 
     watch(
-        [pageS, resolvedPageSizeS, pageA, resolvedPageSizeA, pageT, resolvedPageSizeT, pageO, resolvedPageSizeO],
+        [pageS, resolvedPageSizeS, search],
         async () => {
-            await reloadPage()
+            await reloadPageS()
         },
         { immediate: true }
+    )
+
+    watch(
+        [pageA, resolvedPageSizeA, search],
+        async () => {
+            await reloadPageA()
+        },
+        { immediate: true }
+    )
+
+    watch(
+        [pageT, resolvedPageSizeT, search],
+        async () => {
+            await reloadPageT()
+        },
+        { immediate: true }
+    )
+
+    watch(
+        [pageO, resolvedPageSizeO, search],
+        async () => {
+            await reloadPageO()
+        },
+        { immediate: true }
+    )
+    
+    watch(
+        [search, sortByBasicS],
+        async () => {
+            pageS.value = 1
+            await reloadPageS()
+        }
+    )
+
+    watch(
+        [search, sortByBasicA],
+        async () => {
+            pageA.value = 1
+            await reloadPageA()
+        }
+    )
+
+    watch(
+        [search, sortByBasicT],
+        async () => {
+            pageT.value = 1
+            await reloadPageT()
+        }
+    )
+
+    watch(
+        [search, sortByBasicO],
+        async () => {
+            pageO.value = 1
+            await reloadPageO()
+        }
     )
 
 </script>

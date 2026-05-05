@@ -117,8 +117,6 @@ import { useTasks } from '~/composable/useTasks';
             await getServersBasic();     
             await getApplicationsToTask();
             if (!props.modelTaskValue) return
-
-            console.log(basicApplicationToTaskData.value)
             
             if (val.id) {
                 const fullTask = await getTaskEdit(val.id)

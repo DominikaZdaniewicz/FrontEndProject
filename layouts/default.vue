@@ -13,12 +13,10 @@
         <v-container
             class="w-66 my-2">
                 <v-tabs>
-                    <v-tab :to="localPath('/servers')">{{ $t("serversBtn") }}</v-tab>
-                    <v-tab :to="localPath('/applications')">{{ $t("applicationsBtn") }}</v-tab>
-                    <v-tab :to="localPath('/tasks')">{{ $t("tasksBtn") }}</v-tab>
-                    <v-tab class="text-capitalize" :to="localPath('/basicInfo')">{{ $t("basicInfo") }}</v-tab>
-                    <!-- <v-tab class="text-capitalize ml-8" :to="localPath('/serversInfo')">{{ $t("serversInfoBtn") }}</v-tab>
-                    <v-tab class="text-capitalize ml-8" :to="localPath('/serversInfo')">{{ $t("serversInfoBtn") }}</v-tab> -->
+                    <v-btn variant="text" :to="localPath('/servers')">{{ $t("serversBtn") }}</v-btn>
+                    <v-btn variant="text" :to="localPath('/applications')">{{ $t("applicationsBtn") }}</v-btn>
+                    <v-btn variant="text" :to="localPath('/tasks')">{{ $t("tasksBtn") }}</v-btn>
+                    <v-btn variant="text" :to="localPath('/basicInfo')">{{ $t("basicInfo") }}</v-btn>
                 </v-tabs>
                 <v-spacer />
             <NuxtPage/>
@@ -27,8 +25,6 @@
 </template>
 
 <script setup>
-// import { v } from 'vue-router/dist/router-CWoNjPRp.mjs';
-
 
     const localPath = useLocalePath();
 
