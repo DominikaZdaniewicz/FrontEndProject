@@ -44,12 +44,18 @@ export  function useServers() {
             pageSize,
             filterEmpty,
             filterNotEmpty,
-            filterActive,
-            sortBy
+            filterActive
         }
 
         if (search) {
         query.search = search
+        }
+
+        if (Array.isArray(sortBy)) {
+            sortBy.forEach((s, index) => {
+                query[`sortBy[${index}].key`] = s.key
+                query[`sortBy[${index}].order`] = s.order
+            })
         }
 
         return await $fetch('/api/Server/pagination', {
@@ -126,7 +132,6 @@ export  function useServers() {
 
         window.URL.revokeObjectURL(url)
     }
-
 
     return {
         getServers,
