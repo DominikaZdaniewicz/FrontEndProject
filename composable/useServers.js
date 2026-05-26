@@ -120,6 +120,19 @@ export  function useServers() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function importServers(file) {
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        await $fetch('/api/Server/import', {
+            method: 'POST',
+            body: formData
+        })
+    }
+
+
     return {
         getServers,
         addServer,
@@ -133,6 +146,7 @@ export  function useServers() {
         basicServerData,
         getServerEdit,
         getExportServers,
-        getExportBasicServers
+        getExportBasicServers,
+        importServers
     }
 }

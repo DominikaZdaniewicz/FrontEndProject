@@ -2,18 +2,50 @@
   <client-only>
     <div class="d-flex justify-end mb-6 mt-8">
       <v-btn
+          v-if="isAdmin"
+          @click="openImportTasks">
+          {{ $t('import') }}
+      </v-btn>
+      <v-btn
+        class="ml-4"
           @click="openExportTasks">
           {{ $t('export') }}
       </v-btn>
       <v-btn 
-        class="ml-8 bg-surface-variant" 
-        @click="openAddTask">
-        {{ $t("addTask") }}
+          v-if="isAdmin"
+          prepend-icon="mdi-plus"
+          class="ml-8 bg-surface-variant w-25" 
+          @click="openAddTask">
+          {{ $t("addTask") }}
       </v-btn>
     </div>
+  <v-dialog v-model="dialogImport" max-width="500">
+      <v-card
+          class = "px-2 py-4"
+          :text="$t('importMsg')">
+          <v-file-input
+              v-model="selectedFile"
+              accept=".xlsx,.xls"
+              label="Select Excel file"
+              clearable/>
+          <template #actions>    
+              <v-spacer />
+              <v-btn
+                  @click="dialogImport = false">
+                  {{ $t('cancel') }}
+              </v-btn>
+              <v-btn
+                  class="bg-surface-variant"
+                  :disabled="!selectedFile"
+                  @click="confirmImport">
+                  {{ $t('import') }}
+              </v-btn>
+          </template>
+      </v-card>
+    </v-dialog>
     <v-dialog v-model="dialogExport" max-width="500">
         <v-card
-            prepend-icon="mdi-alert"
+            prepend-icon="mdi-export"
             :text="$t('exportMsg')">
             <template #actions>
                 <v-spacer />
@@ -30,14 +62,15 @@
         </v-card>
     </v-dialog>
     <add-edit-tasks
-      :mode="dialogMode"
-      :model-task-value="formTask"
-      :dialog-open="dialogTaskOpen"
-      @update:dialogOpenTasks="dialogTaskOpen = $event"
-      @save-task="handleSaveTask"
-      @cancel-task="dialogTaskOpen = false"/>
+        :mode="dialogMode"
+        :model-task-value="formTask"
+        :dialog-open="dialogTaskOpen"
+        @update:dialogOpenTasks="dialogTaskOpen = $event"
+        @save-task="handleSaveTask"
+        @cancel-task="dialogTaskOpen = false"/>
     <div class="mb-4 d-flex align-center">
             <v-btn 
+                prepend-icon="mdi-filter-outline"
                 class="py-7 mr-8 d-flex justify-end"
                 @click="filterMenu = !filterMenu">
                 {{ $t('filter') }}
@@ -49,7 +82,7 @@
                     v-model="search" />
             </div>
         </div>
-        <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
+        <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-25">
             <v-select
                 v-model="activeFilter"
                 hide-details
@@ -81,7 +114,9 @@
         {{ formatDate(value) }}
       </template>
       <template #item.actions="{ item }">
-        <div class="d-flex justify-end">
+        <div 
+          v-if="isAdmin"
+          class="d-flex justify-end">
           <v-btn
             :title="$t('edit')"
             icon="mdi-pencil"
@@ -124,10 +159,14 @@ import headersNames from '../assets/data/headers.json';
 import { useI18n } from 'vue-i18n';
 
     const { locale, t } = useI18n();
-
+    const { data } = useAuth()
     const page = ref(1)
     const itemsPerPage = ref(10);
     const paginationData = ref(null);
+
+    const isAdmin = computed(() => {
+        return data.value?.roles?.includes("administrator")
+    })
 
     const tasks = computed(() => paginationData.value?.productPerPage ?? [])
         
@@ -150,7 +189,7 @@ import { useI18n } from 'vue-i18n';
       ...displayedHeaders.slice(1)
     ]);
 
-    const { addTask, removeTask, updateTask, paginationTask, getExportTasks } = useTasks();
+    const { addTask, removeTask, updateTask, paginationTask, getExportTasks, importTasks } = useTasks();
 
     const search = ref('')
     
@@ -160,12 +199,29 @@ import { useI18n } from 'vue-i18n';
 
     const sortBy = ref([])
 
+    const selectedFile = ref(null)
+    
+    const confirmImport = async () => {
+        if (!selectedFile.value) return
+
+        try {
+            await importTasks(selectedFile.value)
+            await reloadPage()
+            dialogImport.value = false
+        } catch (e) {
+            console.error('Import failed', e)
+        } finally {
+            selectedFile.value = null
+        }
+    }
+
     const dialogMode = ref('add');
     const dialogTaskOpen = ref(false);
     const formTask = ref(null);
     const dialogDelete = ref(false);
     const taskToDelete = ref(null);
     const dialogExport = ref(false)
+    const dialogImport = ref(false)
 
     const openAddTask = () => {
       dialogMode.value = 'add';
@@ -222,6 +278,10 @@ import { useI18n } from 'vue-i18n';
 
     const openExportTasks = () => {
       dialogExport.value = true
+    }
+    
+    const openImportTasks = () => {
+      dialogImport.value = true
     }
 
     const confirmDelete = async () => {

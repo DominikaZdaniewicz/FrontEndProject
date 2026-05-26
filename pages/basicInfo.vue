@@ -12,7 +12,7 @@
         </div>
         <v-dialog v-model="dialogServersExport" max-width="500">
             <v-card
-                prepend-icon="mdi-alert"
+                prepend-icon="mdi-export"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />
@@ -48,7 +48,7 @@
         </div>
         <v-dialog v-model="dialogApplicationsExport" max-width="500">
             <v-card
-                prepend-icon="mdi-alert"
+                prepend-icon="mdi-export"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />
@@ -84,7 +84,7 @@
         </div>
         <v-dialog v-model="dialogTasksExport" max-width="500">
             <v-card
-                prepend-icon="mdi-alert"
+                prepend-icon="mdi-export"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />
@@ -120,7 +120,7 @@
         </div>
         <v-dialog v-model="dialogOwnersExport" max-width="500">
             <v-card
-                prepend-icon="mdi-alert"
+                prepend-icon="mdi-export"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />

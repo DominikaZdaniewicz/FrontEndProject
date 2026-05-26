@@ -29,9 +29,6 @@
                 item-title="name"
                 item-value="id"
                 :label="$t('applicationHeader')"/>
-                <!-- <template #selection>
-                    <span>{{ displayApplicationName }}</span>
-                </template> -->
             <v-textarea
                 v-model="localTask.description"
                 :label="$t('description')"
@@ -64,9 +61,9 @@ import { useApplications } from '~/composable/useApplications'
 import { useTasks } from '~/composable/useTasks'
 import { useOwners } from '~/composable/useOwners';
 
-    const { owners, getOwners } = await useOwners() 
+    const { owners } = useOwners() 
     const { getTaskEdit } = useTasks();
-    const { basicApplicationData, getApplicationsBasic } = await useApplications()
+    const { basicApplicationData, getApplicationsBasic } = useApplications()
     const { basicServerData, getServersBasic } = useServers()
 
     const props = defineProps({
@@ -95,6 +92,29 @@ import { useOwners } from '~/composable/useOwners';
     const serverError = ref('')
     const isInitializing = ref(false)
 
+    // onMounted(async () => {
+    //     await getOwners()
+    //     await getServersBasic()
+    //     await getApplicationsBasic()
+    // })
+
+    // watch(() => props.modelTaskValue,
+    //     async (val) => {
+    //         if (!val) {
+    //             localTask.value = { ...emptyTask }
+    //             return
+    //         }
+
+    //         if (val.id) {
+    //             const fullTask = await getTaskEdit(val.id)
+    //             localTask.value = { ...emptyTask, ...fullTask }
+    //         } else {
+    //             localTask.value = { ...emptyTask }
+    //         }
+    //     },
+    //     { immediate: true }
+    // )
+
      watch(
         () => props.modelTaskValue,
         async (val) => {
@@ -106,9 +126,9 @@ import { useOwners } from '~/composable/useOwners';
             }
 
             dialogOpenTasks.value = !!val;
-            await getOwners();   
-            await getServersBasic();  
-            await getApplicationsBasic();   
+            await getOwners()
+            await getServersBasic()
+            await getApplicationsBasic()
 
             if (!props.modelTaskValue) return
             
@@ -124,7 +144,6 @@ import { useOwners } from '~/composable/useOwners';
         { immediate: true }
     )
     
-
     watch(
         () => localTask.value.name, 
         val => {

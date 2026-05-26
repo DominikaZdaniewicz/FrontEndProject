@@ -1,20 +1,52 @@
 <template>
     <client-only>
-
         <div class="d-flex justify-end mb-6 mt-8">
             <v-btn
+                v-if="isAdmin"
+                @click="openImportServers">
+                {{ $t('import') }}
+            </v-btn>
+            <v-btn
+                class="ml-4"
                 @click="openExportServers">
                 {{ $t('export') }}
             </v-btn>
             <v-btn 
-                class="ml-8 bg-surface-variant" 
+                v-if="isAdmin"
+                prepend-icon="mdi-plus"
+                class="ml-8 bg-surface-variant w-25" 
                 @click="openAddServer">
                 {{ $t("addServer") }}
             </v-btn>
         </div>
+        <v-dialog v-model="dialogImport" max-width="500">
+            <v-card
+                class = "px-2 py-4"
+                :text="$t('importMsg')">
+                <v-file-input
+                    v-model="selectedFile"
+                    accept=".xlsx,.xls"
+                    label="Select Excel file"
+                    clearable/>
+                <template #actions>    
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogImport = false">
+                        {{ $t('cancel') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        :disabled="!selectedFile"
+                        @click="confirmImport">
+                        {{ $t('import') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
         <v-dialog v-model="dialogExport" max-width="500">
             <v-card
-                prepend-icon="mdi-alert"
+                prepend-icon="mdi-export"
+                class = "px-2 py-4"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />
@@ -41,6 +73,7 @@
         />
         <div class="mb-4 d-flex align-center">
             <v-btn 
+                prepend-icon="mdi-filter-outline"
                 class="py-7 mr-8 d-flex justify-end"
                 @click="filterMenu = !filterMenu">
                 {{ $t('filter') }}
@@ -96,7 +129,9 @@
                 {{ formatDate(value) ?? '-' }}
             </template>
             <template #item.actions="{ item }">
-                <div class="d-flex justify-end">
+                <div 
+                    v-if="isAdmin"
+                    class="d-flex justify-end">
                     <v-btn 
                         :title="$t('edit')"
                         icon="mdi-pencil"
@@ -142,8 +177,8 @@ import headersNames from '../assets/data/headers.json';
 
     const { locale } = useI18n();
     
-    const { addServer, removeServer, updateServer, paginationServer, getExportServers } =  useServers();    
-
+    const { addServer, removeServer, updateServer, paginationServer, getExportServers, importServers } =  useServers();    
+    const { data } = useAuth()
     const page = ref(1)
     const itemsPerPage = ref(10);
     const totalItems = computed(() => paginationData.value?.numberOfServers ?? 0)
@@ -153,7 +188,10 @@ import headersNames from '../assets/data/headers.json';
     const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
 
     const servers = computed(() => paginationData.value?.productPerPage ?? [])
-        
+
+    const isAdmin = computed(() => {
+        return data.value?.roles?.includes("administrator")
+    })
 
     const displayedHeaders = headersNames.map(h => ({
         ...h,
@@ -174,14 +212,33 @@ import headersNames from '../assets/data/headers.json';
     const sortBy = ref([])
 
     const dialog = ref(false)
+
     const dialogExport = ref(false)
+
+    const dialogImport = ref(false)
 
     const formServer = ref(null)
 
     const infoServer = ref(null)
 
     const serverToDelete = ref(null)
+    
+    const selectedFile = ref(null)
+    
+    const confirmImport = async () => {
+        if (!selectedFile.value) return
 
+        try {
+            await importServers(selectedFile.value)
+            await reloadPage()
+            dialogImport.value = false
+        } catch (e) {
+            console.error('Import failed', e)
+        } finally {
+            selectedFile.value = null
+        }
+    }
+        
     const openAddServer = () => {
         formServer.value = reactive({
             id: null,
@@ -221,6 +278,9 @@ import headersNames from '../assets/data/headers.json';
 
     const openExportServers = () => {
         dialogExport.value = true
+    }
+    const openImportServers = () => {
+        dialogImport.value = true
     }
 
     const confirmDelete = async () => {

@@ -90,8 +90,6 @@ import { useServers } from '~/composable/useServers';
                 localServer.value = { ...emptyServer }
             }
             },
-            
-
         { immediate: true }
     )
     

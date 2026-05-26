@@ -118,6 +118,18 @@ export function useTasks() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function importTasks(file) {
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        await $fetch('/api/Task/import', {
+            method: 'POST',
+            body: formData
+        })
+    }
+
     return {
         backendTasks,
         getTasks,
@@ -130,6 +142,7 @@ export function useTasks() {
         basicTaskData,
         getTaskEdit,
         getExportTasks,
-        getExportBasicTasks
+        getExportBasicTasks,
+        importTasks
     }
 }

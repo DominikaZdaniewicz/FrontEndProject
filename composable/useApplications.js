@@ -122,6 +122,17 @@ export function useApplications() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function importApplications(file) {
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        await $fetch('/api/Application/import', {
+            method: 'POST',
+            body: formData
+        })
+    }
 
     return {
         backendApplications,
@@ -138,6 +149,7 @@ export function useApplications() {
         getApplicationsToTask,
         basicApplicationToTaskData,
         getExportApplications,
-        getExportBasicApplications
+        getExportBasicApplications,
+        importApplications
     }
 }

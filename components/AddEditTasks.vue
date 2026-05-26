@@ -95,7 +95,6 @@ import { useTasks } from '~/composable/useTasks';
 
     const availableApplications =  computed(() => {
         if (!localTask.value?.serverId) {
-            getApplicationsBasic();
             return basicApplicationData.value
         };
         return basicApplicationToTaskData.value?.filter(a => a.serverId === localTask.value.serverId) ?? []
@@ -115,6 +114,7 @@ import { useTasks } from '~/composable/useTasks';
             dialogOpenTasks.value = !!val;
             await getOwners();   
             await getServersBasic();     
+            await getApplicationsBasic();
             await getApplicationsToTask();
             if (!props.modelTaskValue) return
             
