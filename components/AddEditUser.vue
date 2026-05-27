@@ -9,11 +9,11 @@
                     :label="$t('user')"
                     :error-messages="usernameError"
                 ></v-text-field>  
-                <!-- <v-text-field
+                <v-text-field
                     v-model="localUser.password"
                     type="password"
                     :label="$t('password')"
-                    :error-messages="passwordError"/> -->
+                    :error-messages="passwordError"/>
                 <v-text-field
                     v-model="localUser.firstName"
                     :label="$t('firstName')">
@@ -36,6 +36,8 @@
                     item-title="name"
                     item-value="value"
                     :label="$t('roles')"
+                    multiple
+                    :menu-props="{ closeOnContentClick: true }"
                 ></v-select>
             </v-card-text>
             <v-btn 
@@ -86,6 +88,7 @@ import { useUsers } from '~/composable/useUsers';
     const localUser = ref({ ...emptyUser })
 
     const usernameError = ref('')
+    const passwordError = ref('')
 
     watch(
         () => props.modelUserValue,
@@ -116,6 +119,14 @@ import { useUsers } from '~/composable/useUsers';
             }
         }
     )
+    watch(
+        () => localUser.value.password,
+        (newVal) => {
+            if (newVal?.trim()) {
+                passwordError.value = ''
+            }
+        }
+    )
         
     watch(
         () => props.dialogOpen,
@@ -130,13 +141,26 @@ import { useUsers } from '~/composable/useUsers';
             usernameError.value = $t('nameError');
             return 
         }
-        emit('saveUser', localUser.value)
+        if (!localUser.value.password?.trim()) {
+            passwordError.value = $t('passwordError');
+            return 
+        }
+  
+        const payload = {
+            ...localUser.value,
+            roles: [].concat(localUser.value.roles || []).flat()
+        }
+
+        console.log("PAYLOAD:", payload)
+
+        emit('save-user', payload)
         dialogOpenUsers.value = false;
         usernameError.value = ''
+        passwordError.value = ''
     }
 
     const deleteUser = () => {
-        emit('cancelUser')
+        emit('cancel-user')
         dialogOpenUsers.value = false;
     }
 

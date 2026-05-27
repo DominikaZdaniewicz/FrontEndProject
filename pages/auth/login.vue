@@ -40,11 +40,14 @@
     const password = ref('')
 
     const login = async () => {
-        return await signIn({
-            username: userName.value,
-            password: password.value,
-            redirect: false
-        })
+        try {
+            await signIn({
+                username: userName.value,
+                password: password.value
+            })
+        } catch (err) {
+            console.error("LOGIN ERROR:", err)
+        }
     }
         
     watch(status, async (val) => {

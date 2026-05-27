@@ -183,7 +183,7 @@ import { useUsers } from '~/composable/useUsers';
             users: response.productPerPage.map(u => ({
                 ...u,
                 userId: u.id,
-                roles: u.roles ? [u.roles] : []
+                roles: Array.isArray(u.roles) ? u.roles.flat() : u.roles ? [u.roles] : []
             })),
             totalUsers: response.numberOfUsers
         }
@@ -199,7 +199,7 @@ import { useUsers } from '~/composable/useUsers';
             lastName: '',
             email: '',
             phoneNumber: '',
-            roles: ''
+            roles: []
         };
         dialogUserOpen.value = true;
     }; 
