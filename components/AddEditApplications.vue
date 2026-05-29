@@ -24,9 +24,9 @@
                     :label="$t('description')">
                 </v-textarea> 
                 <v-select 
-                    v-model="localApplication.ownerId"
-                    :items="owners"
-                    item-title="name"
+                    v-model="localApplication.userId"
+                    :items="backendUsers"
+                    item-title="userName"
                     item-value="id"
                     :label="$t('owner')"
                 ></v-select>
@@ -53,12 +53,14 @@
 
 <script setup>
 import { useApplications } from '~/composable/useApplications';
-import { useOwners } from '~/composable/useOwners';
+// import { useOwners } from '~/composable/useOwners';
 import { useServers } from '~/composable/useServers';
+import { useUsers } from '~/composable/useUsers';
 
-    const { owners, getOwners } = useOwners() 
+    // const { owners, getOwners } = useOwners() 
     const { getApplicationEdit } = useApplications()
     const { basicServerData, getServersBasic } = useServers()
+    const { backendUsers, getUsers } = useUsers()
 
     const props = defineProps({
         modelApplicationValue: Object
@@ -78,7 +80,7 @@ import { useServers } from '~/composable/useServers';
         name: '',
         description: '',
         serverId: null,
-        ownerId: null,
+        userId: null,
         isActive: true
     }
 
@@ -93,8 +95,8 @@ import { useServers } from '~/composable/useServers';
             }
 
             dialogOpenApplications.value = !!val;
-            await getOwners();   
-            await getServersBasic();     
+            await getUsers();
+            await getServersBasic();
 
             if (!props.modelApplicationValue) return
             

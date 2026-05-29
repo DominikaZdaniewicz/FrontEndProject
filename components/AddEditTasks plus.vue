@@ -34,9 +34,9 @@
                 :label="$t('description')"
             />
             <v-select
-                v-model="localTask.ownerId"
-                :items="owners"
-                item-title="name"
+                v-model="localTask.userId"
+                :items="backendUsers"
+                item-title="userName"
                 item-value="id"
                 :label="$t('owner')"
             />
@@ -59,9 +59,9 @@
 import { useServers } from '~/composable/useServers'
 import { useApplications } from '~/composable/useApplications'
 import { useTasks } from '~/composable/useTasks'
-import { useOwners } from '~/composable/useOwners';
+import { useUsers } from '~/composable/useUsers';
 
-    const { owners } = useOwners() 
+    const { backendUsers, getUsers } = useUsers()
     const { getTaskEdit } = useTasks();
     const { basicApplicationData, getApplicationsBasic } = useApplications()
     const { basicServerData, getServersBasic } = useServers()
@@ -82,7 +82,7 @@ import { useOwners } from '~/composable/useOwners';
         description: '',
         serverId: null,
         applicationId: null,
-        ownerId: null,
+        userId: null,
         isActive: true
     }
 
@@ -126,7 +126,7 @@ import { useOwners } from '~/composable/useOwners';
             }
 
             dialogOpenTasks.value = !!val;
-            await getOwners()
+            await getUsers()
             await getServersBasic()
             await getApplicationsBasic()
 

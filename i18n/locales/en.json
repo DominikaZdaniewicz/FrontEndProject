@@ -69,9 +69,14 @@
   "user": "User",
   "users": "Users",
   "administrator": "Administrator",
-  "register": "Create an aaccount",
+  "register": "Create an account",
   "login": "Log In to your account",
   "changePassword": "Change password",
   "passwordMsg": "Password must be at least 12 characters long and contain at least one number, one uppercase letter, and one lowercase letter.",
-  "account": "account"
+  "account": "account",
+  "forgotPassword": "Forgot your password?",
+  "confirmPassword": "Confirm password",
+  "send": "Send",
+  "back": "Back",
+  "forgotPasswordMsg": "Enter your email and we will send you a link to set your new password."
 }

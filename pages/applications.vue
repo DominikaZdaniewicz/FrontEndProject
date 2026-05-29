@@ -232,8 +232,8 @@ import headersNames from '../assets/data/headers.json';
             description: '',
             serverName: '',
             serverId: null,
-            ownerId: null,
-            ownerName: '',
+            userId: null,
+            userName: '',
             isActive: true,
             isEmpty: true
         }

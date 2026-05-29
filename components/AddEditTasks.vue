@@ -31,9 +31,9 @@
                     :label="$t('description')">
                 </v-textarea> 
                 <v-select 
-                    v-model="localTask.ownerId"
-                    :items="owners"
-                    item-title="name"
+                    v-model="localTask.userId"
+                    :items="backendUsers"
+                    item-title="userName"
                     item-value="id"
                     :label="$t('owner')"
                 ></v-select>
@@ -60,11 +60,11 @@
 
 <script setup>
 import { useApplications } from '~/composable/useApplications';
-import { useOwners } from '~/composable/useOwners';
+import { useUsers } from '~/composable/useUsers';
 import { useServers } from '~/composable/useServers';
 import { useTasks } from '~/composable/useTasks';
 
-    const { owners, getOwners } = useOwners() 
+    const { backendUsers, getUsers } = useUsers()
     const { getTaskEdit } = useTasks()
     const { basicServerData, getServersBasic } = useServers()
     const { basicApplicationData, basicApplicationToTaskData, getApplicationsBasic, getApplicationsToTask } = useApplications()
@@ -112,8 +112,8 @@ import { useTasks } from '~/composable/useTasks';
             }
 
             dialogOpenTasks.value = !!val;
-            await getOwners();   
-            await getServersBasic();     
+            await getUsers();
+            await getServersBasic();
             await getApplicationsBasic();
             await getApplicationsToTask();
             if (!props.modelTaskValue) return

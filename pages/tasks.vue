@@ -230,7 +230,7 @@ import { useI18n } from 'vue-i18n';
         description: '',
         serverId: null,
         applicationId: null,
-        ownerId: null,
+        userId: null,
         isActive: true
       };
       dialogTaskOpen.value = true;

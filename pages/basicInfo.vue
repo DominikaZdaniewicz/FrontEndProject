@@ -111,7 +111,7 @@
             v-model:page="pageT"
             v-model:sort-by="sortByBasicT"
             multi-sort/> 
-        <div class="d-flex align-center justify-space-between mb-6 mt-8">
+        <!-- <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('ownersBtn') }}</h2>
             <v-btn
                 @click="openExportOwners">
@@ -146,7 +146,7 @@
             v-model:page="pageO"
             :items-length="totalItemsO"
             v-model:sort-by="sortByBasicO"
-            multi-sort/> 
+            multi-sort/>  -->
     </client-only>
 </template>
 
@@ -154,12 +154,12 @@
 import { useServers } from '~/composable/useServers';
 import { useApplications } from '~/composable/useApplications';
 import { useTasks } from '~/composable/useTasks';
-import { useOwners } from '~/composable/useOwners';
+// import { useOwners } from '~/composable/useOwners';
 
     const { paginationBasicApplication, getExportBasicApplications } = useApplications();
     const { paginationBasicTask, getExportBasicTasks } = useTasks();
     const { paginationBasicServer, getExportBasicServers } = useServers();    
-    const { paginationBasicOwner, getExportBasicOwners } = useOwners()
+    // const { paginationBasicOwner, getExportBasicOwners } = useOwners()
 
     const { locale } = useI18n();
 
@@ -171,7 +171,7 @@ import { useOwners } from '~/composable/useOwners';
     const dialogServersExport = ref(false)
     const dialogApplicationsExport = ref(false)
     const dialogTasksExport = ref(false)
-    const dialogOwnersExport = ref(false)
+    // const dialogOwnersExport = ref(false)
 
     const headers = [{ title: 'Id', key: 'id', sortable: true }, { title: $t('nameHeader'), key: 'name', sortable: true }]
 
@@ -184,9 +184,9 @@ import { useOwners } from '~/composable/useOwners';
     const openExportTasks = () => {
         dialogTasksExport.value = true
     }
-    const openExportOwners = () => {
-        dialogOwnersExport.value = true
-    }
+    // const openExportOwners = () => {
+    //     dialogOwnersExport.value = true
+    // }
 
     const confirmExportServers = async () => {
         await getExportBasicServers()
@@ -200,47 +200,47 @@ import { useOwners } from '~/composable/useOwners';
         await getExportBasicTasks()
         dialogTasksExport.value = false
     }
-    const confirmExportOwners = async () => {
-        await getExportBasicOwners()
-        dialogOwnersExport.value = false
-    }
+    // const confirmExportOwners = async () => {
+    //     await getExportBasicOwners()
+    //     dialogOwnersExport.value = false
+    // }
     
     const pageS = ref(1)
     const pageA = ref(1)
     const pageT = ref(1)
-    const pageO = ref(1)
+    // const pageO = ref(1)
 
     const itemsPerPageS = ref(5)
     const itemsPerPageA = ref(5)
     const itemsPerPageT = ref(5)
-    const itemsPerPageO = ref(5)
+    // const itemsPerPageO = ref(5)
 
     const paginationS = ref(null)
     const paginationA = ref(null)
     const paginationT = ref(null)
-    const paginationO = ref(null)
+    // const paginationO = ref(null)
 
     const search = ref('')
 
     const totalItemsS = computed(() => paginationS.value?.numberOfServers ?? 0)
     const totalItemsA = computed(() => paginationA.value?.numberOfApplications ?? 0)
     const totalItemsT = computed(() => paginationT.value?.numberOfTasks ?? 0)
-    const totalItemsO = computed(() => paginationO.value?.numberOfOwners ?? 0)
+    // const totalItemsO = computed(() => paginationO.value?.numberOfOwners ?? 0)
 
     const resolvedPageSizeS = computed(() => itemsPerPageS.value === 'all' ? totalItemsS.value || 5 : itemsPerPageS.value);
     const resolvedPageSizeA = computed(() => itemsPerPageA.value === 'all' ? totalItemsA.value || 5 : itemsPerPageA.value);
     const resolvedPageSizeT = computed(() => itemsPerPageT.value === 'all' ? totalItemsT.value || 5 : itemsPerPageT.value);
-    const resolvedPageSizeO = computed(() => itemsPerPageO.value === 'all' ? totalItemsO.value || 5 : itemsPerPageO.value);
+    // const resolvedPageSizeO = computed(() => itemsPerPageO.value === 'all' ? totalItemsO.value || 5 : itemsPerPageO.value);
 
     const servers = computed(() => paginationS.value?.serversPerPage ?? [])
     const applications = computed(() => paginationA.value?.appsPerPage ?? [])
     const tasks = computed(() => paginationT.value?.tasksPerPage ?? [])
-    const owners = computed(() => paginationO.value?.ownersPerPage ?? [])
+    // const owners = computed(() => paginationO.value?.ownersPerPage ?? [])
 
     const itemsPerPageOptionsS = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsS.value, title: $t('all') }]);
     const itemsPerPageOptionsA = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsA.value, title: $t('all') }]);
     const itemsPerPageOptionsT = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsT.value, title: $t('all') }]);
-    const itemsPerPageOptionsO = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsO.value, title: $t('all') }]);
+    // const itemsPerPageOptionsO = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsO.value, title: $t('all') }]);
 
     const reloadPageS = async () => {
         paginationS.value = await paginationBasicServer(pageS.value, resolvedPageSizeS.value, search.value, sortByBasicS.value)
@@ -251,9 +251,9 @@ import { useOwners } from '~/composable/useOwners';
     const reloadPageT = async () => {
         paginationT.value = await paginationBasicTask(pageT.value, resolvedPageSizeT.value, search.value, sortByBasicT.value)
     }
-    const reloadPageO = async () => {
-        paginationO.value = await paginationBasicOwner(pageO.value, resolvedPageSizeO.value, search.value, sortByBasicO.value)
-    }
+    // const reloadPageO = async () => {
+    //     paginationO.value = await paginationBasicOwner(pageO.value, resolvedPageSizeO.value, search.value, sortByBasicO.value)
+    // }
 
     watch(
         [pageS, resolvedPageSizeS, search],
@@ -279,13 +279,13 @@ import { useOwners } from '~/composable/useOwners';
         { immediate: true }
     )
 
-    watch(
-        [pageO, resolvedPageSizeO, search],
-        async () => {
-            await reloadPageO()
-        },
-        { immediate: true }
-    )
+    // watch(
+    //     [pageO, resolvedPageSizeO, search],
+    //     async () => {
+    //         await reloadPageO()
+    //     },
+    //     { immediate: true }
+    // )
     
     watch(
         [search, sortByBasicS],
@@ -311,13 +311,13 @@ import { useOwners } from '~/composable/useOwners';
         }
     )
 
-    watch(
-        [search, sortByBasicO],
-        async () => {
-            pageO.value = 1
-            await reloadPageO()
-        }
-    )
+    // watch(
+    //     [search, sortByBasicO],
+    //     async () => {
+    //         pageO.value = 1
+    //         await reloadPageO()
+    //     }
+    // )
 
 </script>
 

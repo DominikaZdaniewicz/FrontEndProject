@@ -32,6 +32,9 @@
             v-model="password"
             :label="$t('password')"
             hide-details
+            name="password"
+            autocomplete="new-password"
+            autocorrect="off"
             class="field"/>
         <div
             class="mt-8 d-flex justify-center">
@@ -55,7 +58,7 @@
 <script setup>
     const localPath = useLocalePath();
 
-    const { signUp, status } = useAuth();
+    const { signUp, status, setPassword } = useAuth();
 
     const userName = ref('')
     const password = ref('')

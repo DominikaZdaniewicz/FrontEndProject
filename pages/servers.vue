@@ -244,8 +244,8 @@ import headersNames from '../assets/data/headers.json';
             id: null,
             name: '',
             description: '',
-            ownerId: null,
-            ownerName: '',
+            userId: null,
+            userName: '',
             isActive: true,
         })
     }

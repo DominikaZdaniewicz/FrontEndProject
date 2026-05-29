@@ -14,9 +14,9 @@
                     :label="$t('description')">
                 </v-textarea>
                 <v-select 
-                    v-model="localServer.ownerId"
-                    :items="owners"
-                    item-title="name"
+                    v-model="localServer.userId"
+                    :items="backendUsers"
+                    item-title="userName"
                     item-value="id"
                     :label="$t('owner')"
                 ></v-select>
@@ -42,11 +42,13 @@
 </template>
 
 <script setup>
-import { useOwners } from '~/composable/useOwners';
+// import { useOwners } from '~/composable/useOwners';
+import { useUsers } from '~/composable/useUsers';
 import { useServers } from '~/composable/useServers';
 
-    const { owners, getOwners } = useOwners()
+    // const { owners, getOwners } = useOwners()
     const { getServerEdit } = useServers()
+    const { backendUsers, getUsers } = useUsers()
 
     const props = defineProps({
         modelServerValue: Object
@@ -61,7 +63,7 @@ import { useServers } from '~/composable/useServers';
     const emptyServer = {
         name: '',
         description: '',
-        ownerId: null,
+        userId: null,
         isActive: true
     }
 
@@ -80,7 +82,7 @@ import { useServers } from '~/composable/useServers';
             }
 
             dialogOpenServers.value = !!val;
-            await getOwners();           
+            await getUsers()
             
             if (val.id) {
                 const fullServer = await getServerEdit(val.id)

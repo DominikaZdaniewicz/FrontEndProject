@@ -73,5 +73,10 @@
   "login": "Zaloguj się na swoje konto",
   "changePassword": "Zmień hasło",
   "passwordMsg": "Hasło musi mieć co najmniej 12 znaków i zawierać przynajmniej jedną cyfrę, jedną wielką literę oraz jedną małą literę.",
-  "account": "konto"
+  "account": "konto",
+  "forgotPassword": "Zapomniałeś hasła?",
+  "confirmPassword": "Potwierdź hasło",
+  "send": "Wyślij",
+  "back": "Wróć",
+  "forgotPasswordMsg": "Wprowadź swój e-mail, a my wyślemy Ci link do ustawienia nowego hasła."
 }

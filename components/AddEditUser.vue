@@ -9,6 +9,7 @@
                     :label="$t('user')"
                     :error-messages="usernameError"
                 ></v-text-field>  
+                {{ console.log(usernameError.value) }}
                 <v-text-field
                     v-model="localUser.password"
                     type="password"
@@ -56,7 +57,7 @@
 </template>
 
 <script setup>
-import { useUsers } from '~/composable/useUsers';
+// import { useUsers } from '~/composable/useUsers';
     const localPath = useLocalePath();
 
     const props = defineProps({
@@ -87,8 +88,9 @@ import { useUsers } from '~/composable/useUsers';
 
     const localUser = ref({ ...emptyUser })
 
-    const usernameError = ref('')
-    const passwordError = ref('')
+    const usernameError = ref([])
+    const passwordError = ref([])
+
 
     watch(
         () => props.modelUserValue,
@@ -115,7 +117,7 @@ import { useUsers } from '~/composable/useUsers';
         () => localUser.value.userName,
         (newVal) => {
             if (newVal?.trim()) {
-                usernameError.value = ''
+                usernameError.value = []
             }
         }
     )
@@ -123,7 +125,7 @@ import { useUsers } from '~/composable/useUsers';
         () => localUser.value.password,
         (newVal) => {
             if (newVal?.trim()) {
-                passwordError.value = ''
+                passwordError.value = []
             }
         }
     )
@@ -138,25 +140,35 @@ import { useUsers } from '~/composable/useUsers';
 
     const saveUser= () => {
         if (!localUser.value.userName?.trim()) {
-            usernameError.value = $t('nameError');
+            usernameError.value = [$t('nameError')];
             return 
         }
         if (!localUser.value.password?.trim()) {
-            passwordError.value = $t('passwordError');
+            passwordError.value = [$t('passwordError')];
             return 
         }
   
-        const payload = {
-            ...localUser.value,
-            roles: [].concat(localUser.value.roles || []).flat()
+        // const payload = {
+        //     ...localUser.value,
+        //     roles: localUser.value.roles?.length ? localUser.value.roles : ['user']
+        // }
+
+        
+        let roles = localUser.value.roles
+
+        if (!roles || roles.length === 0) {
+            roles = ['user']
         }
 
-        console.log("PAYLOAD:", payload)
+        const payload = {
+            ...localUser.value,
+            roles
+        }
 
         emit('save-user', payload)
         dialogOpenUsers.value = false;
-        usernameError.value = ''
-        passwordError.value = ''
+        usernameError.value = []
+        passwordError.value = []
     }
 
     const deleteUser = () => {

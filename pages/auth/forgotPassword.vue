@@ -1,37 +1,42 @@
 <template>
-    <v-form @submit.prevent="login" 
+    <v-form @submit.prevent="resetPassword" 
         class="btn">
-        <h4 class="mb-8 text-uppercase d-flex flex-column align-center">{{ $t('login') }}</h4>
+        <!-- <h4 class="mb-2 text-uppercase d-flex flex-column align-center">{{ $t('forgotPassword') }}</h4> -->
+        <a class="mb-8 d-flex flex-column align-center">{{ $t("forgotPasswordMsg") }}</a>
         <v-text-field
-            v-model="userName"
-            :label="$t('userName')"
+            v-model="email"
+            :label="$t('email')"
             hide-details
             class="field"/>
-        <v-text-field
+        <!-- <v-text-field
             v-model="password"
-            :label="$t('password')"
+            :label="$t('newPassword')"
             type="password"
             name="password"
             autocomplete="new-password"
             autocorrect="off"
             hide-details
             class="field"/>
-        <router-link 
-            :to="localPath('/auth/forgotPassword')" 
-            class="link">
-            {{ $t("forgotPassword") }}
-        </router-link>
+        <v-text-field
+            v-model="confirmPassword"
+            :label="$t('confirmPassword')"
+            type="password"
+            name="confirmPassword"
+            autocomplete="new-password"
+            autocorrect="off"
+            hide-details
+            class="field"/> -->
         <div
             class="mt-8 d-flex justify-center">
             <v-btn 
                 type="submit"
                 class="bg-surface-variant py-5 w-50 d-flex justify-center">
-                {{ $t("signInBtn") }}
+                {{ $t("send") }}
             </v-btn>
             <router-link 
-                :to="localPath('/auth/register')" 
+                :to="localPath('/auth/login')" 
                 class="w-50 link d-flex justify-center align-center">
-                {{ $t("signUpBtn") }}
+                {{ $t("back") }}
             </router-link> 
         </div>
     </v-form>
@@ -44,19 +49,29 @@
 
     const router = useRouter()
     
-    const userName = ref('')
+    const email = ref('')
     const password = ref('')
+    const confirmPassword = ref('')
 
-    const login = async () => {
+    const resetPassword = async () => {
         try {
-            await signIn({
-                username: userName.value,
-                password: password.value
-            })
+            
+            console.log("Resetting password for:", email.value)
         } catch (err) {
-            console.error("LOGIN ERROR:", err)
+            console.error("RESET PASSWORD ERROR:", err)
         }
     }
+
+    // const login = async () => {
+    //     try {
+    //         await signIn({
+    //             username: email.value,
+    //             password: password.value
+    //         })
+    //     } catch (err) {
+    //         console.error("LOGIN ERROR:", err)
+    //     }
+    // }
         
     watch(status, async (val) => {
         if (val === 'authenticated') {

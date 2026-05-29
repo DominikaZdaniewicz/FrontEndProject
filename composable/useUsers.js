@@ -15,7 +15,7 @@ export function useUsers() {
     // }
 
     async function getUsers() {
-        const users = await $fetch('http://localhost:5056/auth/users', { credentials: 'include' });
+        const users = await $fetch('http://localhost:5056/api/User/all', { credentials: 'include' });
 
         backendUsers.value = users;
         return backendUsers;
