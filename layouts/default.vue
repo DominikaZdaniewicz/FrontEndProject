@@ -19,10 +19,10 @@
             @update:dialogOpen="val => dialogUserOpen = val"
             @save-user="handleSaveLoggedUser"
             @cancel-user="() => 
-            {
-                loggedUser = null;
-                dialogUserOpen = false;
-            }"
+                {
+                    loggedUser = null;
+                    dialogUserOpen = false;
+                }"
             />
         <div 
             class="d-flex justify-end align-center log-out">
@@ -54,12 +54,13 @@
                         :height="40"
                         to="/users">
                         <v-icon size="20">mdi-account-group-outline</v-icon>
-                    </v-btn>
+                    </v-btn>                        
+                    <!-- @click="openEditLoggedUser(loggedUser)":to="localPath('/profile')" -->
                     <v-btn
                         icon
                         :width="40"
                         :height="40"
-                        @click="openEditLoggedUser(loggedUser)"
+                        :to="localPath('/profile')"
                         class="ml-4">
                         <v-icon size="20">mdi-account-cog-outline</v-icon>
                     </v-btn>

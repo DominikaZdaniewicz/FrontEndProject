@@ -127,7 +127,7 @@ import { useServers } from '~/composable/useServers';
     const tasksList = computed(() => {
         return serverDetails.value?.tasksList ?? '-'
     })
-    
+   
     const formatDate = (dateString) => {
         if (!dateString) return "-"
 

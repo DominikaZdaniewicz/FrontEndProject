@@ -8,6 +8,11 @@
             @update:dialogOpenUser="dialogUserOpen = $event"
             @save-user="handleSaveUser"
             @cancel-user="dialogUserOpen = false"/>
+        <email-user
+            :model-user-value="emailedUser"
+            :dialog-open="dialogEmailUserOpen"
+            @update:dialogOpen="dialogEmailUserOpen = $event"
+            @cancel-user="dialogEmailUserOpen = false"/>
         <div class="mb-4 d-flex align-center">
             <v-btn 
                 prepend-icon="mdi-filter-outline"
@@ -79,7 +84,22 @@
                 {{ item.roles.join(', ') }}
             </template>
             <template #item.actions="{ item }">
-                <div class="d-flex justify-end">
+                <div class="d-flex justify-end align-center">
+                <!-- <v-btn
+                    v-if="item.email"
+                    icon="mdi-email-outline"
+                    @click="openEmailUser(item)"
+                    size="30"
+                    flat
+                    class="bg-surface-variant mr-2"/>
+                <v-btn
+                    v-else
+                    icon="mdi-email-outline"
+                    @click="openEmailUser(item)"
+                    size="30"
+                    flat
+                    class="bg-surface-variant mr-2"
+                    disabled/> -->
                 <v-btn
                     icon="mdi-pencil"
                     @click="openEditUser(item)"
@@ -112,6 +132,8 @@
 <script setup>
 
 import { useUsers } from '~/composable/useUsers';
+import { useI18n } from 'vue-i18n';
+import { useEmails } from '~/composable/useEmails';
 
     const { data } = useAuth();
     const { addUser, updateUser, paginationUser, removeUser, getExportUsers } = useUsers();
@@ -130,6 +152,7 @@ import { useUsers } from '~/composable/useUsers';
 
     const dialogMode = ref('add');
     const dialogUserOpen = ref(false);
+    const dialogEmailUserOpen = ref(false);
     const formUser = ref(null);
     const dialogDelete = ref(false);
     const userToDelete = ref(null);
@@ -204,10 +227,17 @@ import { useUsers } from '~/composable/useUsers';
         dialogUserOpen.value = true;
     }; 
 
+    const emailedUser = ref(null)
+
     const openEditUser = (user) => {
         dialogMode.value = 'edit'
         formUser.value = { ...user }
         dialogUserOpen.value = true
+    }
+
+    const openEmailUser = (user) => {
+        emailedUser.value = { ...user }
+        dialogEmailUserOpen.value = true
     }
 
     const handleSaveUser = async userData => {

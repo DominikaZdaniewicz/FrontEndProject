@@ -6,7 +6,7 @@
                 <v-text-field
                     class="mb-2"
                     v-model="loggedUser.username"
-                    :label="$t('user')"
+                    :label="$t('userName')"
                     :error-messages="usernameError"
                 ></v-text-field> 
                 <v-text-field
@@ -61,7 +61,7 @@
                                     :label="$t('newPassword')"
                                     :error-messages="newPasswordError"/>
                                 <div
-                                    class="d-flex justify-end mt-4">
+                                    class="d-flex mt-4">
                                     <v-btn @click="dialogChange = false">{{ $t('cancel') }}</v-btn>
                                     <v-btn class="bg-surface-variant" @click="confirmChange">
                                     {{ $t('saveEditText') }}
@@ -161,7 +161,7 @@ import { useUsers } from '~/composable/useUsers';
     );
 
     watch(
-        () => loggedUser.value.userName,
+        () => loggedUser.value.username,
         (newVal) => {
             if (newVal?.trim()) {
                 usernameError.value = ''

@@ -78,5 +78,19 @@
   "confirmPassword": "Potwierdź hasło",
   "send": "Wyślij",
   "back": "Wróć",
-  "forgotPasswordMsg": "Wprowadź swój e-mail, a my wyślemy Ci link do ustawienia nowego hasła."
+  "forgotPasswordMsg": "Wprowadź swój e-mail, a my wyślemy Ci link do ustawienia nowego hasła.",
+  "loginFailed": "Nieprawidłowa nazwa użytkownika lub hasło.",
+  "emailSubject": "Temat wiadomości",
+  "emailBody": "Napisz treść wiadomości e-mail, którą chcesz wysłać.",
+  "emailSent": "E-mail został wysłany.",
+  "emailFailed": "Nie można wysłać e-maila.",
+  "emailUser": "Wyślij e-mail do użytkownika",
+  "editProfile": "Edytuj profil",
+  "emailList": "Skrzynka pocztowa e-mail",
+  "userProfile": "Profil użytkownika",
+  "dateOfSending": "Data wysłania",
+  "emailFrom": "Nadawca",
+  "inbox": "Skrzynka odbiorcza",
+  "outbox": "Skrzynka nadawcza",
+  "seeDetails": "Szczegóły"
 }

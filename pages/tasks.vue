@@ -68,6 +68,12 @@
         @update:dialogOpenTasks="dialogTaskOpen = $event"
         @save-task="handleSaveTask"
         @cancel-task="dialogTaskOpen = false"/>
+    <email-user
+        :model-user-value="selectedUser"
+        :dialog-open="dialogEmailUserOpen"
+        @update:dialogOpen="dialogEmailUserOpen = $event"
+        @cancel-user="dialogEmailUserOpen = false"
+        :task-id="selectedTaskId"/>
     <div class="mb-4 d-flex align-center">
             <v-btn 
                 prepend-icon="mdi-filter-outline"
@@ -115,8 +121,22 @@
       </template>
       <template #item.actions="{ item }">
         <div 
-          v-if="isAdmin"
-          class="d-flex justify-end">
+          class="d-flex justify-end align-center">
+          <v-btn
+              v-if="item.userId"
+              icon="mdi-email-outline"
+              @click="openEmailUser(item)"
+              size="30"
+              flat
+              class="bg-surface-variant mr-2"/>
+          <v-btn
+              v-else
+              icon="mdi-email-outline"
+              @click="openEmailUser(item)"
+              size="30"
+              flat
+              class="bg-surface-variant mr-2"
+              disabled/>
           <v-btn
             :title="$t('edit')"
             icon="mdi-pencil"
@@ -155,9 +175,12 @@
 <script setup>
 import { useTasks } from '~/composable/useTasks';
 import AddEditTasks from '~/components/AddEditTasks.vue';
+import EmailUser from '~/components/EmailUser.vue';
 import headersNames from '../assets/data/headers.json';
 import { useI18n } from 'vue-i18n';
+import { useUsers } from '~/composable/useUsers';
 
+    const { getUsers, backendUsers } = useUsers();
     const { locale, t } = useI18n();
     const { data } = useAuth()
     const page = ref(1)
@@ -175,7 +198,11 @@ import { useI18n } from 'vue-i18n';
     const itemsPerPageOptions = computed(() => [{ value: 10, title: 10 }, { value: 25, title: 25 }, { value: totalItems.value, title: $t('all') }]);
 
     const resolvedPageSize = computed(() => itemsPerPage.value === 'all' ? totalItems.value || 10 : itemsPerPage.value);
-  
+
+    const dialogEmailUserOpen = ref(false);
+
+    const selectedUser = ref(null)
+    const selectedTaskId = ref(null)
     const displayedHeaders = headersNames.map(h => ({
       ...h,
       title: h.title[locale.value],
@@ -229,7 +256,9 @@ import { useI18n } from 'vue-i18n';
         name: '',
         description: '',
         serverId: null,
+        serverName: null,
         applicationId: null,
+        applicationName: null,
         userId: null,
         isActive: true
       };
@@ -253,7 +282,8 @@ import { useI18n } from 'vue-i18n';
           search.value, 
           activeFilter.value,
           sortBy.value,
-    )}
+      )
+    }
 
     const openEditTask = (task) => {
       dialogMode.value = 'edit'
@@ -295,6 +325,21 @@ import { useI18n } from 'vue-i18n';
       await getExportTasks()
       dialogExport.value = false
     }
+    
+    const openEmailUser = async (task) => {
+      await getUsers()
+
+      const usersArray = Array.isArray(backendUsers.value) ? backendUsers.value : [];
+  
+      const user = usersArray.find(u => u.id === task.userId)
+
+      if (!user) {
+        return
+      }
+      selectedUser.value = user
+      selectedTaskId.value = task.id
+      dialogEmailUserOpen.value = true
+    }
 
     watch(
         [page, resolvedPageSize],
@@ -311,7 +356,4 @@ import { useI18n } from 'vue-i18n';
             await reloadPage()
         }
     )
-
-
-
 </script>

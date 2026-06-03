@@ -29,8 +29,8 @@
                 <v-textarea
                     v-model="localTask.description"
                     :label="$t('description')">
-                </v-textarea> 
-                <v-select 
+                </v-textarea>
+                <v-select
                     v-model="localTask.userId"
                     :items="backendUsers"
                     item-title="userName"
@@ -81,6 +81,8 @@ import { useTasks } from '~/composable/useTasks';
 
     const localTask = ref({})
 
+    const isInitializing = ref(true)
+
     const nameError = ref('')
     const serverError = ref('')
 
@@ -88,49 +90,91 @@ import { useTasks } from '~/composable/useTasks';
         name: '',
         description: '',
         serverId: null,
+        serverName: null,
         applicationId: null,
-        ownerId: null,
+        applicationName: null,
+        userId: null,
         isActive: true
     }
 
-    const availableApplications =  computed(() => {
+    // const availableApplications =  computed(() => {
+    //     if (!localTask.value?.serverId) {
+    //         return basicApplicationData.value
+    //     };
+    //     return basicApplicationToTaskData.value?.filter(a => a.serverId === localTask.value.serverId) ?? []
+    // })
+
+    const availableApplications = computed(() => {
         if (!localTask.value?.serverId) {
-            return basicApplicationData.value
-        };
-        return basicApplicationToTaskData.value?.filter(a => a.serverId === localTask.value.serverId) ?? []
+            return basicApplicationData.value ?? []
+        }
+
+        const filtered = basicApplicationToTaskData.value?.filter(
+            a => a.serverId === localTask.value.serverId
+        ) ?? []
+
+        return filtered
     })
 
+    watch (
+        () => localTask.value.applicationId,
+        (id) => {
+            if (!id) return
 
-    watch(
+            const app = availableApplications.value.find(a => a.id === id)
+
+            if (app) {
+            localTask.value.applicationName = app.name
+            }
+        }
+    )
+ 
+    watch (
         () => props.modelTaskValue,
         async (val) => {
-                        
-            if (val === null) {
-                dialogOpenTasks.value = false
-                localTask.value = { ...emptyTask }
-                return
-            }
+            isInitializing.value = true
 
-            dialogOpenTasks.value = !!val;
-            await getUsers();
-            await getServersBasic();
-            await getApplicationsBasic();
-            await getApplicationsToTask();
-            if (!props.modelTaskValue) return
-            
-            if (val.id) {
-                const fullTask = await getTaskEdit(val.id)
-                localTask.value = { ...emptyTask, ...fullTask }
-            }
-            else {
-                localTask.value = { ...emptyTask }
-            }
-            },
+            try {
+                if (val === null) {
+                    dialogOpenTasks.value = false
+                    localTask.value = { ...emptyTask }
+                    return
+                }
 
+                dialogOpenTasks.value = !!val
+
+                await getUsers()
+                await getServersBasic()
+                await getApplicationsBasic()
+                await getApplicationsToTask()
+
+                if (val.id) {
+                    const fullTask = await getTaskEdit(val.id)
+                    localTask.value = { ...emptyTask, ...fullTask }
+                } else {
+                    localTask.value = { ...emptyTask }
+                }
+
+            } finally {
+                isInitializing.value = false 
+            }
+        },
         { immediate: true }
     )
-    
-    watch(
+
+    watch (
+        () => localTask.value.serverId,
+        (newVal, oldVal) => {
+            if (isInitializing.value) return
+
+            if (newVal !== oldVal) {
+            localTask.value.applicationId = null
+            localTask.value.applicationName = null
+            }
+        }
+    )
+            
+    watch (
         () => localTask.value.name,
         (newVal) => {
             if (newVal?.trim()) {
@@ -139,7 +183,7 @@ import { useTasks } from '~/composable/useTasks';
         }
     )
 
-    watch(
+    watch (
         () => localTask.value.serverId, 
         val => {
             if (val) serverError.value = ''
@@ -156,6 +200,7 @@ import { useTasks } from '~/composable/useTasks';
         }
         nameError.value = ''
         serverError.value = ''
+        console.log('Saving task:', localTask.value)
         emit('save-task', localTask.value)
         emit('update:dialogOpenTasks', false)
         dialogOpenTasks.value = false

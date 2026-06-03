@@ -78,5 +78,19 @@
   "confirmPassword": "Confirm password",
   "send": "Send",
   "back": "Back",
-  "forgotPasswordMsg": "Enter your email and we will send you a link to set your new password."
+  "forgotPasswordMsg": "Enter your email and we will send you a link to set your new password.",
+  "loginFailed": "Invalid username or password.",
+  "emailSubject": "Subject",
+  "emailBody": "Write the content of the email you want to send.",
+  "emailSent": "Email has been sent.",
+  "emailFailed": "Failed to send email.",
+  "emailUser": "Send Email to User",
+  "editProfile": "Edit Profile",
+  "emailList": "Email inbox",
+  "userProfile": "User Profile",
+  "dateOfSending": "Date of sending",
+  "emailFrom": "Email from",
+  "inbox": "Inbox",
+  "outbox": "Outbox",
+  "seeDetails": "Details"
 }

@@ -1,12 +1,14 @@
 <template>
     <v-form @submit.prevent="login" 
         class="btn">
-        <h4 class="mb-8 text-uppercase d-flex flex-column align-center">{{ $t('login') }}</h4>
+        <h4 class="mb-4 text-uppercase d-flex flex-column align-center">{{ $t('login') }}</h4>
+        <a v-if="errorMsg" class="text-red mb-4 text-uppercase">{{ $t('loginFailed') }}</a>
         <v-text-field
             v-model="userName"
             :label="$t('userName')"
             hide-details
-            class="field"/>
+            class="field mt-4"
+            :error-messages="userNameError"/>
         <v-text-field
             v-model="password"
             :label="$t('password')"
@@ -15,7 +17,8 @@
             autocomplete="new-password"
             autocorrect="off"
             hide-details
-            class="field"/>
+            class="field"
+            :error-messages="passwordError"/>
         <router-link 
             :to="localPath('/auth/forgotPassword')" 
             class="link">
@@ -47,14 +50,21 @@
     const userName = ref('')
     const password = ref('')
 
+    const userNameError = ref('')
+    const passwordError = ref('')
+
+    const errorMsg = ref(false)
+
     const login = async () => {
         try {
             await signIn({
-                username: userName.value,
-                password: password.value
+                username: userName.value.trim(),
+                password: password.value.trim(),
             })
         } catch (err) {
-            console.error("LOGIN ERROR:", err)
+            if (status.value !== 'authenticated') {
+                errorMsg.value = true
+            }
         }
     }
         
@@ -63,6 +73,26 @@
             await router.push('/servers')
         }
     })
+
+    watch(
+        () => userName.value,
+        (newVal) => {
+            if (newVal?.trim()) {
+                errorMsg.value = false
+                userNameError.value = ''
+            }
+        }
+    )
+
+    watch(
+        () => password.value,
+        (newVal) => {
+            if (newVal?.trim()) {
+                errorMsg.value = false
+                passwordError.value = ''
+            }
+        }
+    )
 
     definePageMeta({
         layout: "small"

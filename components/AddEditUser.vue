@@ -6,10 +6,9 @@
                 <v-text-field
                     class="mb-2"
                     v-model="localUser.userName"
-                    :label="$t('user')"
+                    :label="$t('userName')"
                     :error-messages="usernameError"
                 ></v-text-field>  
-                {{ console.log(usernameError.value) }}
                 <v-text-field
                     v-model="localUser.password"
                     type="password"
