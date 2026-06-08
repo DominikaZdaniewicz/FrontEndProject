@@ -120,6 +120,22 @@ export  function useServers() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function getExportServersPDF() {
+        const blob = await $fetch('/api/Server/exportPDF', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Servers.pdf'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
     async function importServers(file) {
         if (!file) return
 
@@ -147,6 +163,7 @@ export  function useServers() {
         getServerEdit,
         getExportServers,
         getExportBasicServers,
+        getExportServersPDF,
         importServers
     }
 }

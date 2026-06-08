@@ -1,16 +1,12 @@
 <template>
     <client-only>
-        <div class="d-flex justify-end mb-6 mt-8">
-            <v-btn
+        <!-- <div class="d-flex justify-end mb-6 mt-8"> -->
+            <!-- <v-btn
                 v-if="isAdmin"
                 @click="openImportServers">
                 {{ $t('import') }}
-            </v-btn>
-            <v-btn
-                class="ml-4"
-                @click="openExportServers">
-                {{ $t('export') }}
-            </v-btn>
+            </v-btn> -->
+        <div class="d-flex justify-end mb-6 mt-8">
             <v-btn 
                 v-if="isAdmin"
                 prepend-icon="mdi-plus"
@@ -62,6 +58,25 @@
                 </template>
             </v-card>
         </v-dialog>
+        <v-dialog v-model="dialogPDFExport" max-width="500">
+            <v-card
+                prepend-icon="mdi-export"
+                class = "px-2 py-4"
+                :text="$t('exportPdfMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogPDFExport = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmPDFExportServers">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
         <add-edit-server
             :model-server-value="formServer"
             @save-server="handleSaveServer"
@@ -84,6 +99,13 @@
                     :label="$t('search')" 
                     v-model="search" />
             </div>
+            <!-- <v-btn 
+                v-if="isAdmin"
+                prepend-icon="mdi-plus"
+                class="py-7 ml-8 d-flex justify-center bg-surface-variant" 
+                @click="openAddServer">
+                {{ $t("addServer") }}
+            </v-btn> -->
         </div>
         <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
             <v-select
@@ -101,6 +123,45 @@
                 { value: 'allActive', title: $t('all') },
                 { value: 'active', title: $t('active') },
                 { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+        <div
+                v-if="isAdmin"
+                class="my-6 d-flex justify-end align-center">
+                <div
+                    class="d-flex align-center ml-4">
+                    {{$t('importFrom')}}
+                </div>
+                <div>
+                    <v-btn
+                        class="ml-4"
+                        @click="openImportServers">
+                        {{ $t('exportExcel') }}
+                    </v-btn>
+                </div>
+                <div
+                    class="d-flex align-center ml-4">
+                    {{$t('exportTo')}}
+                </div>
+                <div>
+                    <v-btn
+                        class="ml-4"
+                        @click="openExportServers">
+                        {{ $t('exportExcel') }}
+                    </v-btn>
+                    <v-btn
+                        class="ml-4"
+                        @click="openExportServersPDF">
+                        {{ $t('exportPDF') }}
+                    </v-btn>
+                </div>
+            <!-- </div> -->
+            <!-- <v-select
+                class="ml-4"
+                :text="$t('export')"
+                :items="[
+                    { title: $t('exportExcel'), action: openExportServers },
+                    { title: $t('exportPDF'), action: openExportServersPDF },
+                ]"/> -->
         </div>
         <v-data-table-server
             class="rounded-lg"
@@ -177,7 +238,7 @@ import headersNames from '../assets/data/headers.json';
 
     const { locale } = useI18n();
     
-    const { addServer, removeServer, updateServer, paginationServer, getExportServers, importServers } =  useServers();    
+    const { addServer, removeServer, updateServer, paginationServer, getExportServers, getExportServersPDF, importServers } =  useServers();    
     const { data } = useAuth()
     const page = ref(1)
     const itemsPerPage = ref(10);
@@ -214,6 +275,8 @@ import headersNames from '../assets/data/headers.json';
     const dialog = ref(false)
 
     const dialogExport = ref(false)
+
+    const dialogPDFExport = ref(false)
 
     const dialogImport = ref(false)
 
@@ -279,6 +342,11 @@ import headersNames from '../assets/data/headers.json';
     const openExportServers = () => {
         dialogExport.value = true
     }
+
+    const openExportServersPDF = () => {
+        dialogPDFExport.value = true
+    }
+
     const openImportServers = () => {
         dialogImport.value = true
     }
@@ -291,6 +359,11 @@ import headersNames from '../assets/data/headers.json';
         dialog.value = false
         serverToDelete.value = null
         await reloadPage()
+    }
+
+    const confirmPDFExportServers = async () => {
+        await getExportServersPDF()
+        dialogPDFExport.value = false
     }
 
     const confirmExportServers = async () => {

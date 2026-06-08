@@ -40,10 +40,10 @@
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('users') }}</h2>
             <div class="d-flex justify-end mb-6 mt-8">    
-                <v-btn
+                <!-- <v-btn
                     @click="openExportUsers">
                     {{ $t('export') }}
-                </v-btn>
+                </v-btn> -->
                 <v-btn 
                     prepend-icon="mdi-plus"
                     class="ml-8 bg-surface-variant" 
@@ -70,6 +70,55 @@
                 </template>
             </v-card>
         </v-dialog>
+        <v-dialog v-model="dialogExportPDF" max-width="500">
+            <v-card
+                prepend-icon="mdi-export"
+                :text="$t('exportPdfMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogExportPDF = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmExportUsersPDF">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
+        <div
+            v-if="isAdmin"
+            class="my-6 d-flex justify-end align-center">
+            <!-- <div
+                class="d-flex align-center ml-4">
+                {{$t('importFrom')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openImportServers">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+            </div> -->
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('exportTo')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportUsers">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportUsersPDF">
+                    {{ $t('exportPDF') }}
+                </v-btn>
+            </div>
+        </div>
         <v-data-table-server
             class="rounded-lg mt-8 pl-4 pr-4 small-columns"
             :items="users"
@@ -136,7 +185,7 @@ import { useI18n } from 'vue-i18n';
 import { useEmails } from '~/composable/useEmails';
 
     const { data } = useAuth();
-    const { addUser, updateUser, paginationUser, removeUser, getExportUsers } = useUsers();
+    const { addUser, updateUser, paginationUser, removeUser, getExportUsers, getExportUsersPDF } = useUsers();
 
     const { t } = useI18n();
 
@@ -156,8 +205,8 @@ import { useEmails } from '~/composable/useEmails';
     const formUser = ref(null);
     const dialogDelete = ref(false);
     const userToDelete = ref(null);
-    const dialogExport = ref(false)
-
+    const dialogExport = ref(false);
+    const dialogExportPDF = ref(false)
 
     const headers = [
         { title: $t('userName'), key: 'userName', sortable: true }, 
@@ -257,6 +306,15 @@ import { useEmails } from '~/composable/useEmails';
     const confirmExportUsers = async () => {
         await getExportUsers()
         dialogExport.value = false
+    }
+
+    const openExportUsersPDF = () => {
+        dialogExportPDF.value = true
+    }
+
+    const confirmExportUsersPDF = async () => {
+        await getExportUsersPDF()
+        dialogExportPDF.value = false
     }
 
     const openDeleteDialog = userId => {

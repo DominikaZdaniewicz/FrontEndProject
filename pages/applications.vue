@@ -1,7 +1,7 @@
 <template>
     <client-only>
         <div class="d-flex justify-end mb-6 mt-8">
-            <v-btn
+            <!-- <v-btn
                 v-if="isAdmin"
                 @click="openImportApplications">
                 {{ $t('import') }}
@@ -10,7 +10,7 @@
                 class="ml-4"
                 @click="openExportApplications">
                 {{ $t('export') }}
-            </v-btn>
+            </v-btn> -->
             <v-btn 
                 v-if="isAdmin"
                 prepend-icon="mdi-plus"
@@ -61,6 +61,24 @@
                 </template>
             </v-card>
         </v-dialog>
+        <v-dialog v-model="dialogExportPDF" max-width="500">
+            <v-card
+                prepend-icon="mdi-export"
+                :text="$t('exportMsg')">
+                <template #actions>
+                    <v-spacer />
+                    <v-btn
+                        @click="dialogExportPDF = false">
+                        {{ $t('no') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        @click="confirmExportApplicationsPDF">
+                        {{ $t('yes') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog>
         <add-edit-applications
             :model-application-value="formApplication"
             @save-application="handleSaveApplications"
@@ -95,6 +113,37 @@
                 { value: 'allActive', title: $t('all') },
                 { value: 'active', title: $t('active') },
                 { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+        <div
+            v-if="isAdmin"
+            class="my-6 d-flex justify-end align-center">
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('importFrom')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openImportApplications">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+            </div>
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('exportTo')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportApplications">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportApplicationsPDF">
+                    {{ $t('exportPDF') }}
+                </v-btn>
+            </div>
         </div>
         <v-data-table-server
             class="rounded-lg"
@@ -164,7 +213,7 @@ import headersNames from '../assets/data/headers.json';
 
     const emit = defineEmits(['applications-updated'])
 
-    const { addApplication, removeApplications, updateApplications, paginationApplication, getExportApplications, importApplications } = useApplications();
+    const { addApplication, removeApplications, updateApplications, paginationApplication, getExportApplications, getExportApplicationsPDF, importApplications } = useApplications();
     const { data } = useAuth()
 
     const { locale } = useI18n();
@@ -205,6 +254,7 @@ import headersNames from '../assets/data/headers.json';
 
     const dialog = ref(false)
     const dialogExport = ref(false)
+    const dialogExportPDF = ref(false)
     const dialogImport = ref(false)
 
     const applicationToDelete = ref(null)
@@ -269,6 +319,10 @@ import headersNames from '../assets/data/headers.json';
         dialogExport.value = true
     }
 
+    const openExportApplicationsPDF = () => {
+        dialogExportPDF.value = true
+    }
+
     const openImportApplications = () => {
         dialogImport.value = true
     }
@@ -284,6 +338,11 @@ import headersNames from '../assets/data/headers.json';
     const confirmExportApplications = async () => {
         await getExportApplications()
         dialogExport.value = false
+    }    
+    
+    const confirmExportApplicationsPDF = async () => {
+        await getExportApplicationsPDF()
+        dialogExportPDF.value = false
     }
 
     const openEditApplication = (applications) => {

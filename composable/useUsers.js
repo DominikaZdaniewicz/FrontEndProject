@@ -95,6 +95,22 @@ export function useUsers() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function getExportUsersPDF() {
+        const blob = await $fetch('/api/User/exportPDF', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Users.pdf'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
     async function paginationUser(page, pageSize, search, filterIsAdmin, sortBy) {
         return await $fetch('/api/User/pagination', {
             method: 'POST',
@@ -119,6 +135,7 @@ export function useUsers() {
         updateUser,
         removeUser,
         getExportUsers,
+        getExportUsersPDF,
         paginationUser
     }
 }

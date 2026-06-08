@@ -1,7 +1,7 @@
 <template>
   <client-only>
     <div class="d-flex justify-end mb-6 mt-8">
-      <v-btn
+      <!-- <v-btn
           v-if="isAdmin"
           @click="openImportTasks">
           {{ $t('import') }}
@@ -10,7 +10,7 @@
         class="ml-4"
           @click="openExportTasks">
           {{ $t('export') }}
-      </v-btn>
+      </v-btn> -->
       <v-btn 
           v-if="isAdmin"
           prepend-icon="mdi-plus"
@@ -61,6 +61,24 @@
             </template>
         </v-card>
     </v-dialog>
+    <v-dialog v-model="dialogExportPDF" max-width="500">
+        <v-card
+            prepend-icon="mdi-export"
+            :text="$t('exportMsg')">
+            <template #actions>
+                <v-spacer />
+                <v-btn
+                    @click="dialogExportPDF = false">
+                    {{ $t('no') }}
+                </v-btn>
+                <v-btn
+                    class="bg-surface-variant"
+                    @click="confirmExportTasksPDF">
+                    {{ $t('yes') }}
+                </v-btn>
+            </template>
+        </v-card>
+    </v-dialog>
     <add-edit-tasks
         :mode="dialogMode"
         :model-task-value="formTask"
@@ -96,6 +114,37 @@
                 { value: 'allActive', title: $t('all') },
                 { value: 'active', title: $t('active') },
                 { value: 'inactive', title: $t('inactive') },]"/>
+        </div>
+        <div
+            v-if="isAdmin"
+            class="my-6 d-flex justify-end align-center">
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('importFrom')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openImportTasks">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+            </div>
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('exportTo')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportTasks">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportTasksPDF">
+                    {{ $t('exportPDF') }}
+                </v-btn>
+            </div>
         </div>
     <v-data-table-server
       class="rounded-lg"
@@ -216,7 +265,7 @@ import { useUsers } from '~/composable/useUsers';
       ...displayedHeaders.slice(1)
     ]);
 
-    const { addTask, removeTask, updateTask, paginationTask, getExportTasks, importTasks } = useTasks();
+    const { addTask, removeTask, updateTask, paginationTask, getExportTasks, importTasks, getExportTasksPDF } = useTasks();
 
     const search = ref('')
     
@@ -248,6 +297,7 @@ import { useUsers } from '~/composable/useUsers';
     const dialogDelete = ref(false);
     const taskToDelete = ref(null);
     const dialogExport = ref(false)
+    const dialogExportPDF = ref(false)
     const dialogImport = ref(false)
 
     const openAddTask = () => {
@@ -309,7 +359,11 @@ import { useUsers } from '~/composable/useUsers';
     const openExportTasks = () => {
       dialogExport.value = true
     }
-    
+
+    const openExportTasksPDF = () => {
+      dialogExportPDF.value = true
+    }
+
     const openImportTasks = () => {
       dialogImport.value = true
     }
@@ -325,7 +379,12 @@ import { useUsers } from '~/composable/useUsers';
       await getExportTasks()
       dialogExport.value = false
     }
-    
+
+    const confirmExportTasksPDF = async () => {
+      await getExportTasksPDF()
+      dialogExportPDF.value = false
+    }
+
     const openEmailUser = async (task) => {
       await getUsers()
 

@@ -122,6 +122,22 @@ export function useApplications() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function getExportApplicationsPDF() {
+        const blob = await $fetch('/api/Application/exportPDF', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Applications.pdf'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
     async function importApplications(file) {
         if (!file) return
 
@@ -150,6 +166,7 @@ export function useApplications() {
         basicApplicationToTaskData,
         getExportApplications,
         getExportBasicApplications,
+        getExportApplicationsPDF,
         importApplications
     }
 }

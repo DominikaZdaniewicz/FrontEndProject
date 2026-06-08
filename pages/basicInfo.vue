@@ -7,7 +7,7 @@
             <h2 class="text-h5">{{ $t('serversBtn') }}</h2>
             <v-btn
                 @click="openExportServers">
-                {{ $t('export') }}
+                {{ $t('exportBasic') }}
             </v-btn>
         </div>
         <v-dialog v-model="dialogServersExport" max-width="500">
@@ -43,7 +43,7 @@
             <h2 class="text-h5">{{ $t('applicationsBtn') }}</h2>
             <v-btn
                 @click="openExportApplications">
-                {{ $t('export') }}
+                {{ $t('exportBasic') }}
             </v-btn>
         </div>
         <v-dialog v-model="dialogApplicationsExport" max-width="500">
@@ -79,7 +79,7 @@
             <h2 class="text-h5">{{ $t('tasksBtn') }}</h2>
             <v-btn
                 @click="openExportTasks">
-                {{ $t('export') }}
+                {{ $t('exportBasic') }}
             </v-btn>
         </div>
         <v-dialog v-model="dialogTasksExport" max-width="500">
@@ -115,7 +115,7 @@
             <h2 class="text-h5">{{ $t('ownersBtn') }}</h2>
             <v-btn
                 @click="openExportOwners">
-                {{ $t('export') }}
+                {{ $t('exportBasic') }}
             </v-btn>
         </div>
         <v-dialog v-model="dialogOwnersExport" max-width="500">

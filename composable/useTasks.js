@@ -118,6 +118,22 @@ export function useTasks() {
         window.URL.revokeObjectURL(url)
     }
 
+    async function getExportTasksPDF() {
+        const blob = await $fetch('/api/Task/exportPDF', {
+            responseType: 'blob'
+        })
+
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = 'Tasks.pdf'
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+
+        window.URL.revokeObjectURL(url)
+    }
+
     async function importTasks(file) {
         if (!file) return
 
@@ -143,6 +159,7 @@ export function useTasks() {
         getTaskEdit,
         getExportTasks,
         getExportBasicTasks,
+        getExportTasksPDF,
         importTasks
     }
 }
