@@ -4,6 +4,23 @@
         class="btn">
         <h4 class="mb-8 text-uppercase d-flex flex-column align-center">{{ $t("register") }}</h4>
         <v-text-field
+            v-model="userName"
+            :label="$t('userName') + '*'"
+            class="field"
+            hide-details
+            :error-messages="usernameError"
+            :append-inner-icon="usernameError.length ? 'mdi-alert-circle' : ''"/>
+        <v-text-field
+            v-model="password"
+            :label="$t('password') + '*'"
+            name="password"
+            autocomplete="new-password"
+            autocorrect="off"
+            class="field"
+            hide-details
+            :error-messages="passwordError"
+            :append-inner-icon="passwordError.length ? 'mdi-alert-circle' : ''"/>
+        <v-text-field
             v-model="firstName"
             :label="$t('firstName')"
             hide-details
@@ -14,27 +31,16 @@
             hide-details
             class="field"/>
         <v-text-field
+            v-model="email"
+            :label="$t('email') + '*'"
+            hide-details
+            class="field"
+            :error-messages="emailError"
+            :append-inner-icon="emailError.length ? 'mdi-alert-circle' : ''"/>
+        <v-text-field
             v-model="phoneNumber"
             :label="$t('phoneNumber')"
             hide-details
-            class="field"/>
-        <v-text-field
-            v-model="email"
-            :label="$t('email')"
-            hide-details
-            class="field"/>
-        <v-text-field
-            v-model="userName"
-            :label="$t('userName')"
-            hide-details
-            class="field"/>
-        <v-text-field
-            v-model="password"
-            :label="$t('password')"
-            hide-details
-            name="password"
-            autocomplete="new-password"
-            autocorrect="off"
             class="field"/>
         <div
             class="mt-8 d-flex justify-center">
@@ -65,13 +71,31 @@
     const firstName = ref('')
     const lastName = ref('')
     const email = ref('')
-    const roles = ref('')
-    const rolesItems = [
-        { label: $t('administrator'), value: 'administrator' },
-        { label: $t('user'), value: 'user' }]    
+
+    const usernameError = ref([])
+    const passwordError = ref([])
+    const emailError = ref([])
+ 
     const phoneNumber = ref('')
 
     const register = async () => {
+        usernameError.value = []
+        passwordError.value = []
+        emailError.value = []
+
+        if (!userName.value.trim()) {
+            usernameError.value = [$t('nameError')];
+            return 
+        }
+        if (!password.value.trim()) {
+            passwordError.value = [$t('passwordError')];
+            return 
+        }
+        if (!email.value.trim()) {
+            emailError.value = [$t('emailError')];
+            return 
+        }
+
         const response = await signUp({
             username: userName.value,
             password: password.value,
@@ -79,10 +103,37 @@
             lastName: lastName.value,
             email: email.value,
             phoneNumber: phoneNumber.value,
+            roles: ['user']
+         }, {
             redirect: false
         })
         if (!response?.ok) return
     }
+
+        watch(
+        () => userName.value,
+        (newVal) => {
+            if (newVal?.trim()) {
+                usernameError.value = []
+            }
+        }
+    )
+    watch(
+        () => password.value,
+        (newVal) => {
+            if (newVal?.trim()) {
+                passwordError.value = []
+            }
+        }
+    )
+    watch(
+        () => email.value,
+        (newVal) => {
+            if (newVal?.trim()) {
+                emailError.value = []
+            }
+        }
+    )
 
     definePageMeta({
         layout: "small"

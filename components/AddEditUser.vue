@@ -8,28 +8,29 @@
                     v-model="localUser.userName"
                     :label="$t('userName')"
                     :error-messages="usernameError"
-                ></v-text-field>  
+                    :append-inner-icon="usernameError.length ? 'mdi-alert-circle' : ''"/>
                 <v-text-field
+                    v-if="!isEditing"
                     v-model="localUser.password"
                     type="password"
                     :label="$t('password')"
-                    :error-messages="passwordError"/>
+                    :error-messages="passwordError"
+                    :append-inner-icon="passwordError.length ? 'mdi-alert-circle' : ''"/>
                 <v-text-field
                     v-model="localUser.firstName"
-                    :label="$t('firstName')">
-                </v-text-field>
+                    :label="$t('firstName')"/>
                 <v-text-field
                     v-model="localUser.lastName"
-                    :label="$t('lastName')">
-                </v-text-field>
+                    :label="$t('lastName')"/>
                 <v-text-field
                     v-model="localUser.email"
-                    :label="$t('email')">
+                    :label="$t('email')"
+                    :error-messages="emailError"
+                    :append-inner-icon="emailError.length ? 'mdi-alert-circle' : ''">
                 </v-text-field>
                 <v-text-field
                     v-model="localUser.phoneNumber"
-                    :label="$t('phoneNumber')">
-                </v-text-field>
+                    :label="$t('phoneNumber')"/>
                 <v-select 
                     v-model="localUser.roles"
                     :items="roles"
@@ -37,8 +38,7 @@
                     item-value="value"
                     :label="$t('roles')"
                     multiple
-                    :menu-props="{ closeOnContentClick: true }"
-                ></v-select>
+                    :menu-props="{ closeOnContentClick: true }"/>
             </v-card-text>
             <v-btn 
                 class="bg-surface-variant mx-6" 
@@ -89,7 +89,7 @@
 
     const usernameError = ref([])
     const passwordError = ref([])
-
+    const emailError = ref([])
 
     watch(
         () => props.modelUserValue,
@@ -128,7 +128,15 @@
             }
         }
     )
-        
+    watch(
+        () => localUser.value.email,
+        (newVal) => {
+            if (newVal?.trim()) {
+                emailError.value = []
+            }
+        }
+    )
+
     watch(
         () => props.dialogOpen,
         (val) => {
@@ -146,7 +154,10 @@
             passwordError.value = [$t('passwordError')];
             return 
         }
-  
+        if (!localUser.value.email?.trim()) {
+            emailError.value = [$t('emailError')];
+            return 
+        }
         // const payload = {
         //     ...localUser.value,
         //     roles: localUser.value.roles?.length ? localUser.value.roles : ['user']
@@ -168,6 +179,7 @@
         dialogOpenUsers.value = false;
         usernameError.value = []
         passwordError.value = []
+        emailError.value = []
     }
 
     const deleteUser = () => {
