@@ -111,42 +111,6 @@
             v-model:page="pageT"
             v-model:sort-by="sortByBasicT"
             multi-sort/> 
-        <!-- <div class="d-flex align-center justify-space-between mb-6 mt-8">
-            <h2 class="text-h5">{{ $t('ownersBtn') }}</h2>
-            <v-btn
-                @click="openExportOwners">
-                {{ $t('exportBasic') }}
-            </v-btn>
-        </div>
-        <v-dialog v-model="dialogOwnersExport" max-width="500">
-            <v-card
-                prepend-icon="mdi-export"
-                :text="$t('exportMsg')">
-                <template #actions>
-                    <v-spacer />
-                    <v-btn
-                        @click="dialogOwnersExport = false">
-                        {{ $t('no') }}
-                    </v-btn>
-                    <v-btn
-                        class="bg-surface-variant"
-                        @click="confirmExportOwners">
-                        {{ $t('yes') }}
-                    </v-btn>
-                </template>
-            </v-card>
-        </v-dialog>
-        <v-data-table-server
-            class="rounded-lg mt-8 pl-4 pr-4 small-columns"
-            :headers="headers"
-            :items="owners"
-            :search="search"
-            :items-per-page-options="itemsPerPageOptionsO"
-            v-model:items-per-page="itemsPerPageO"
-            v-model:page="pageO"
-            :items-length="totalItemsO"
-            v-model:sort-by="sortByBasicO"
-            multi-sort/>  -->
     </client-only>
 </template>
 
@@ -154,24 +118,20 @@
 import { useServers } from '~/composable/useServers';
 import { useApplications } from '~/composable/useApplications';
 import { useTasks } from '~/composable/useTasks';
-// import { useOwners } from '~/composable/useOwners';
 
-    const { paginationBasicApplication, getExportBasicApplications } = useApplications();
-    const { paginationBasicTask, getExportBasicTasks } = useTasks();
-    const { paginationBasicServer, getExportBasicServers } = useServers();    
-    // const { paginationBasicOwner, getExportBasicOwners } = useOwners()
+    const { paginationBasicApplication, exportBasicXlsx: exportBasicApplication } = useApplications();
+    const { paginationBasicTask, exportBasicXlsx: exportBasicTask } = useTasks();
+    const { paginationBasicServer, exportBasicXlsx: exportBasicServer } = useServers();    
 
     const { locale } = useI18n();
 
     const sortByBasicS = ref([])
     const sortByBasicA = ref([])
     const sortByBasicT = ref([])
-    const sortByBasicO = ref([])
 
     const dialogServersExport = ref(false)
     const dialogApplicationsExport = ref(false)
     const dialogTasksExport = ref(false)
-    // const dialogOwnersExport = ref(false)
 
     const headers = [{ title: 'Id', key: 'id', sortable: true }, { title: $t('nameHeader'), key: 'name', sortable: true }]
 
@@ -184,63 +144,49 @@ import { useTasks } from '~/composable/useTasks';
     const openExportTasks = () => {
         dialogTasksExport.value = true
     }
-    // const openExportOwners = () => {
-    //     dialogOwnersExport.value = true
-    // }
 
     const confirmExportServers = async () => {
-        await getExportBasicServers()
+        await exportBasicServer()
         dialogServersExport.value = false
     }
     const confirmExportApplications = async () => {
-        await getExportBasicApplications()
+        await exportBasicApplication()
         dialogApplicationsExport.value = false
     }
     const confirmExportTasks = async () => {
-        await getExportBasicTasks()
+        await exportBasicTask()
         dialogTasksExport.value = false
     }
-    // const confirmExportOwners = async () => {
-    //     await getExportBasicOwners()
-    //     dialogOwnersExport.value = false
-    // }
     
     const pageS = ref(1)
     const pageA = ref(1)
     const pageT = ref(1)
-    // const pageO = ref(1)
 
     const itemsPerPageS = ref(5)
     const itemsPerPageA = ref(5)
     const itemsPerPageT = ref(5)
-    // const itemsPerPageO = ref(5)
 
     const paginationS = ref(null)
     const paginationA = ref(null)
     const paginationT = ref(null)
-    // const paginationO = ref(null)
 
     const search = ref('')
 
     const totalItemsS = computed(() => paginationS.value?.numberOfServers ?? 0)
     const totalItemsA = computed(() => paginationA.value?.numberOfApplications ?? 0)
     const totalItemsT = computed(() => paginationT.value?.numberOfTasks ?? 0)
-    // const totalItemsO = computed(() => paginationO.value?.numberOfOwners ?? 0)
 
     const resolvedPageSizeS = computed(() => itemsPerPageS.value === 'all' ? totalItemsS.value || 5 : itemsPerPageS.value);
     const resolvedPageSizeA = computed(() => itemsPerPageA.value === 'all' ? totalItemsA.value || 5 : itemsPerPageA.value);
     const resolvedPageSizeT = computed(() => itemsPerPageT.value === 'all' ? totalItemsT.value || 5 : itemsPerPageT.value);
-    // const resolvedPageSizeO = computed(() => itemsPerPageO.value === 'all' ? totalItemsO.value || 5 : itemsPerPageO.value);
 
     const servers = computed(() => paginationS.value?.serversPerPage ?? [])
     const applications = computed(() => paginationA.value?.appsPerPage ?? [])
     const tasks = computed(() => paginationT.value?.tasksPerPage ?? [])
-    // const owners = computed(() => paginationO.value?.ownersPerPage ?? [])
 
     const itemsPerPageOptionsS = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsS.value, title: $t('all') }]);
     const itemsPerPageOptionsA = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsA.value, title: $t('all') }]);
     const itemsPerPageOptionsT = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsT.value, title: $t('all') }]);
-    // const itemsPerPageOptionsO = computed(() => [{ value: 5, title: 5 }, { value: 10, title: 10 }, { value: totalItemsO.value, title: $t('all') }]);
 
     const reloadPageS = async () => {
         paginationS.value = await paginationBasicServer(pageS.value, resolvedPageSizeS.value, search.value, sortByBasicS.value)
@@ -251,9 +197,6 @@ import { useTasks } from '~/composable/useTasks';
     const reloadPageT = async () => {
         paginationT.value = await paginationBasicTask(pageT.value, resolvedPageSizeT.value, search.value, sortByBasicT.value)
     }
-    // const reloadPageO = async () => {
-    //     paginationO.value = await paginationBasicOwner(pageO.value, resolvedPageSizeO.value, search.value, sortByBasicO.value)
-    // }
 
     watch(
         [pageS, resolvedPageSizeS, search],
@@ -279,14 +222,6 @@ import { useTasks } from '~/composable/useTasks';
         { immediate: true }
     )
 
-    // watch(
-    //     [pageO, resolvedPageSizeO, search],
-    //     async () => {
-    //         await reloadPageO()
-    //     },
-    //     { immediate: true }
-    // )
-    
     watch(
         [search, sortByBasicS],
         async () => {
@@ -310,14 +245,6 @@ import { useTasks } from '~/composable/useTasks';
             await reloadPageT()
         }
     )
-
-    // watch(
-    //     [search, sortByBasicO],
-    //     async () => {
-    //         pageO.value = 1
-    //         await reloadPageO()
-    //     }
-    // )
 
 </script>
 

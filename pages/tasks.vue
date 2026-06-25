@@ -1,16 +1,6 @@
 <template>
   <client-only>
     <div class="d-flex justify-end mb-6 mt-8">
-      <!-- <v-btn
-          v-if="isAdmin"
-          @click="openImportTasks">
-          {{ $t('import') }}
-      </v-btn>
-      <v-btn
-        class="ml-4"
-          @click="openExportTasks">
-          {{ $t('export') }}
-      </v-btn> -->
       <v-btn 
           v-if="isAdmin"
           prepend-icon="mdi-plus"
@@ -19,14 +9,37 @@
           {{ $t("addTask") }}
       </v-btn>
     </div>
-  <v-dialog v-model="dialogImport" max-width="500">
+    <!-- <v-dialog v-model="dialogImport" max-width="500">
+      <v-card class="px-4 py-4" :text="$t('importMsg')">
+          <div
+              id="my-dropzone" 
+              class="dropzone border border-dashed rounded-lg pa-6 text-center d-flex flex-column align-center justify-center">
+              <v-icon size="40" class="mt-6">
+                  mdi-cloud-upload
+              </v-icon>
+          </div>
+          <template #actions>
+              <v-spacer />
+              <v-btn @click="dialogImport = false">
+                  {{ $t('cancel') }}
+              </v-btn>
+              <v-btn
+                  class="bg-surface-variant"
+                  :disabled="!selectedFile"
+                  @click="confirmImport">
+                  {{ $t('import') }}
+              </v-btn>
+          </template>
+      </v-card>
+  </v-dialog> -->
+  <!-- <v-dialog v-model="dialogImport" max-width="500">
       <v-card
           class = "px-2 py-4"
           :text="$t('importMsg')">
           <v-file-input
               v-model="selectedFile"
               accept=".xlsx,.xls"
-              label="Select Excel file"
+              :label="$t('selectExcelFile')"
               clearable/>
           <template #actions>    
               <v-spacer />
@@ -42,7 +55,7 @@
               </v-btn>
           </template>
       </v-card>
-    </v-dialog>
+    </v-dialog> -->
     <v-dialog v-model="dialogExport" max-width="500">
         <v-card
             prepend-icon="mdi-export"
@@ -118,10 +131,10 @@
         <div
             v-if="isAdmin"
             class="my-6 d-flex justify-end align-center">
-            <div
+            <!-- <div
                 class="d-flex align-center ml-4">
                 {{$t('importFrom')}}
-            </div>
+            </div> -->
             <div>
                 <v-btn
                     class="ml-4"
@@ -228,6 +241,8 @@ import EmailUser from '~/components/EmailUser.vue';
 import headersNames from '../assets/data/headers.json';
 import { useI18n } from 'vue-i18n';
 import { useUsers } from '~/composable/useUsers';
+import Dropzone from "dropzone";
+import "dropzone/dist/dropzone.css";
 
     const { getUsers, backendUsers } = useUsers();
     const { locale, t } = useI18n();
@@ -265,7 +280,7 @@ import { useUsers } from '~/composable/useUsers';
       ...displayedHeaders.slice(1)
     ]);
 
-    const { addTask, removeTask, updateTask, paginationTask, getExportTasks, importTasks, getExportTasksPDF } = useTasks();
+    const { addTask, removeTask, updateTask, paginationTask, exportXlsx, importTasks, exportPdf, getImportRawData } = useTasks();
 
     const search = ref('')
     
@@ -276,20 +291,14 @@ import { useUsers } from '~/composable/useUsers';
     const sortBy = ref([])
 
     const selectedFile = ref(null)
-    
-    const confirmImport = async () => {
-        if (!selectedFile.value) return
 
-        try {
-            await importTasks(selectedFile.value)
-            await reloadPage()
-            dialogImport.value = false
-        } catch (e) {
-            console.error('Import failed', e)
-        } finally {
-            selectedFile.value = null
-        }
-    }
+    const importId = ref(null)
+    
+    // const confirmImport = async () => {
+    //     if (!selectedFile.value) return;
+
+    //     dz.processQueue();
+    // };
 
     const dialogMode = ref('add');
     const dialogTaskOpen = ref(false);
@@ -298,7 +307,7 @@ import { useUsers } from '~/composable/useUsers';
     const taskToDelete = ref(null);
     const dialogExport = ref(false)
     const dialogExportPDF = ref(false)
-    const dialogImport = ref(false)
+    // const dialogImport = ref(false)
 
     const openAddTask = () => {
       dialogMode.value = 'add';
@@ -314,6 +323,24 @@ import { useUsers } from '~/composable/useUsers';
       };
       dialogTaskOpen.value = true;
     }; 
+
+    const loadData = async () => {
+      
+      if (!importId.value) return
+
+      const result = await getImportRawData(importId.value, {
+        page: page.value,
+        pageSize: resolvedPageSize.value,
+        phrase: search.value
+      })
+
+      paginationData.value = {
+        productPerPage: result.items.items,
+        numberOfTasks: result.items.totalCount
+      }
+
+      headers.value = result.headers
+    }
 
     const formatDate = (dateString) => {
       if (!dateString) return "-"
@@ -364,9 +391,9 @@ import { useUsers } from '~/composable/useUsers';
       dialogExportPDF.value = true
     }
 
-    const openImportTasks = () => {
-      dialogImport.value = true
-    }
+    // const openImportTasks = () => {
+    //   dialogImport.value = true
+    // }
 
     const confirmDelete = async () => {
       await removeTask(taskToDelete.value);
@@ -376,12 +403,12 @@ import { useUsers } from '~/composable/useUsers';
     };
 
     const confirmExportTasks = async () => {
-      await getExportTasks()
+      await exportXlsx()
       dialogExport.value = false
     }
 
     const confirmExportTasksPDF = async () => {
-      await getExportTasksPDF()
+      await exportPdf()
       dialogExportPDF.value = false
     }
 
@@ -399,6 +426,54 @@ import { useUsers } from '~/composable/useUsers';
       selectedTaskId.value = task.id
       dialogEmailUserOpen.value = true
     }
+
+//     Dropzone.autoDiscover = false;
+
+//     let dz = null;
+
+//     watch(dialogImport, async (isOpen) => {
+//         if (isOpen) {
+//             await nextTick();
+
+//             if (dz) {
+//                 dz.destroy();
+//             }
+// // url: "/api/Task/import",
+//             dz = new Dropzone("#my-dropzone", {
+//                 url: "http://localhost:5056/api/ImportData/internal/Main",
+//                 paramName: "file",      
+//                 acceptedFiles: ".xlsx,.xls",
+//                 maxFiles: 1,
+//                 dictDefaultMessage: $t('selectExcelFile'),   
+//                 autoProcessQueue: false,
+//                 // headers: {
+//                 //         Authorization: `Bearer ${useAuth().data.value?.token}`
+//                 //     }
+//             });
+                
+//             dz.on("addedfile", (file) => {
+//                 selectedFile.value = file;
+//             });
+
+//             dz.on("success", async (file, response) => {
+//                 console.log("RESPONSE:", response)
+//                 importId.value = response.importId 
+//                 await loadData() 
+//                 dialogImport.value = false
+//                 dz.removeAllFiles()
+//             })
+            
+//             // dz.on("success", async () => {
+//             //     await reloadPage();
+//             //     dialogImport.value = false;
+//             //     dz.removeAllFiles();
+//             // });
+
+//             dz.on("removedfile", () => {
+//                 selectedFile.value = null;
+//             });
+//         }
+//     });
 
     watch(
         [page, resolvedPageSize],

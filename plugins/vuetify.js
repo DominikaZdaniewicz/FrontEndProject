@@ -18,5 +18,19 @@ export default defineNuxtPlugin((nuxtApp) => {
         directives
     })
     nuxtApp.vueApp.use(vuetify)
+    return {
+        provide: {
+            attachmentsApi: {
+                saveFile: async (formData, type) => {
+                    return await $fetch(`/api/ImportData/internal/${selectedType.value}`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                }
+            }
+        }
+    }
+
 })
+
 

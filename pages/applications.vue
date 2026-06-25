@@ -1,16 +1,6 @@
 <template>
     <client-only>
         <div class="d-flex justify-end mb-6 mt-8">
-            <!-- <v-btn
-                v-if="isAdmin"
-                @click="openImportApplications">
-                {{ $t('import') }}
-            </v-btn>
-            <v-btn
-                class="ml-4"
-                @click="openExportApplications">
-                {{ $t('export') }}
-            </v-btn> -->
             <v-btn 
                 v-if="isAdmin"
                 prepend-icon="mdi-plus"
@@ -19,14 +9,37 @@
                 {{ $t("addApplication") }}
             </v-btn>
         </div>
-        <v-dialog v-model="dialogImport" max-width="500">
+        <!-- <v-dialog v-model="dialogImport" max-width="500">
+            <v-card class="px-4 py-4" :text="$t('importMsg')">
+                <div
+                    id="my-dropzone" 
+                    class="dropzone border border-dashed rounded-lg pa-6 text-center d-flex flex-column align-center justify-center">
+                    <v-icon size="40" class="mt-6">
+                        mdi-cloud-upload
+                    </v-icon>
+                </div>
+                <template #actions>
+                    <v-spacer />
+                    <v-btn @click="dialogImport = false">
+                        {{ $t('cancel') }}
+                    </v-btn>
+                    <v-btn
+                        class="bg-surface-variant"
+                        :disabled="!selectedFile"
+                        @click="confirmImport">
+                        {{ $t('import') }}
+                    </v-btn>
+                </template>
+            </v-card>
+        </v-dialog> -->
+        <!-- <v-dialog v-model="dialogImport" max-width="500">
             <v-card
                 class = "px-2 py-4"
                 :text="$t('importMsg')">
                 <v-file-input
                     v-model="selectedFile"
                     accept=".xlsx,.xls"
-                    label="Select Excel file"
+                    :label="$t('selectExcelFile')"
                     clearable/>
                 <template #actions>    
                     <v-spacer />
@@ -42,7 +55,7 @@
                     </v-btn>
                 </template>
             </v-card>
-        </v-dialog>
+        </v-dialog> -->
         <v-dialog v-model="dialogExport" max-width="500">
             <v-card
                 prepend-icon="mdi-export"
@@ -117,10 +130,10 @@
         <div
             v-if="isAdmin"
             class="my-6 d-flex justify-end align-center">
-            <div
+            <!-- <div
                 class="d-flex align-center ml-4">
                 {{$t('importFrom')}}
-            </div>
+            </div> -->
             <div>
                 <v-btn
                     class="ml-4"
@@ -210,10 +223,12 @@
 import { useApplications } from '~/composable/useApplications';
 import AddEditApplications from '~/components/AddEditApplications.vue';
 import headersNames from '../assets/data/headers.json';
+import Dropzone from "dropzone";
+import "dropzone/dist/dropzone.css";
 
     const emit = defineEmits(['applications-updated'])
 
-    const { addApplication, removeApplications, updateApplications, paginationApplication, getExportApplications, getExportApplicationsPDF, importApplications } = useApplications();
+    const { addApplication, removeApplications, updateApplications, paginationApplication, exportXlsx, exportPdf, importApplications } = useApplications();
     const { data } = useAuth()
 
     const { locale } = useI18n();
@@ -227,7 +242,6 @@ import headersNames from '../assets/data/headers.json';
 
     const applications = computed(() => paginationData.value?.productPerPage ?? [])
         
-    
     const displayedHeaders = headersNames.map(h => ({
         ...h,
         title: h.title[locale.value],
@@ -255,25 +269,17 @@ import headersNames from '../assets/data/headers.json';
     const dialog = ref(false)
     const dialogExport = ref(false)
     const dialogExportPDF = ref(false)
-    const dialogImport = ref(false)
+    // const dialogImport = ref(false)
 
     const applicationToDelete = ref(null)
 
     const selectedFile = ref(null)
     
-    const confirmImport = async () => {
-        if (!selectedFile.value) return
+    // const confirmImport = async () => {
+    //     if (!selectedFile.value) return;
 
-        try {
-            await importApplications(selectedFile.value)
-            await reloadPage()
-            dialogImport.value = false
-        } catch (e) {
-            console.error('Import failed', e)
-        } finally {
-            selectedFile.value = null
-        }
-    }
+    //     dz.processQueue();
+    // };
 
     const openAddApplications = () => {
         formApplication.value = {
@@ -323,9 +329,9 @@ import headersNames from '../assets/data/headers.json';
         dialogExportPDF.value = true
     }
 
-    const openImportApplications = () => {
-        dialogImport.value = true
-    }
+    // const openImportApplications = () => {
+    //     dialogImport.value = true
+    // }
 
     const confirmDelete = async () => {
         const deletedAppId = applicationToDelete.value
@@ -336,12 +342,12 @@ import headersNames from '../assets/data/headers.json';
     }    
     
     const confirmExportApplications = async () => {
-        await getExportApplications()
+        await exportXlsx()
         dialogExport.value = false
     }    
     
     const confirmExportApplicationsPDF = async () => {
-        await getExportApplicationsPDF()
+        await exportPdf()
         dialogExportPDF.value = false
     }
 
@@ -364,6 +370,46 @@ import headersNames from '../assets/data/headers.json';
         emit('applications-updated')  
         closeDialogApplications()
     }
+
+    // Dropzone.autoDiscover = false;
+
+    // let dz = null;
+
+    // watch(dialogImport, async (isOpen) => {
+    //     if (isOpen) {
+    //         await nextTick();
+
+    //         if (dz) {
+    //             dz.destroy();
+    //         }
+
+    //         dz = new Dropzone("#my-dropzone", {
+    //             url: "/api/Application/import",
+    //             paramName: "file",      
+    //             acceptedFiles: ".xlsx,.xls",
+    //             maxFiles: 1,
+    //             dictDefaultMessage: $t('selectExcelFile'),   
+    //             autoProcessQueue: false,
+    //             // headers: {
+    //             //         Authorization: `Bearer ${useAuth().data.value?.token}`
+    //             //     }
+    //         });
+                
+    //         dz.on("addedfile", (file) => {
+    //             selectedFile.value = file;
+    //         });
+            
+    //         dz.on("success", async () => {
+    //             await reloadPage();
+    //             dialogImport.value = false;
+    //             dz.removeAllFiles();
+    //         });
+
+    //         dz.on("removedfile", () => {
+    //             selectedFile.value = null;
+    //         });
+    //     }
+    // });
 
     watch(
         [page, resolvedPageSize],

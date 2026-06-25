@@ -1,11 +1,5 @@
 <template>
     <client-only>
-        <!-- <div class="d-flex justify-end mb-6 mt-8"> -->
-            <!-- <v-btn
-                v-if="isAdmin"
-                @click="openImportServers">
-                {{ $t('import') }}
-            </v-btn> -->
         <div class="d-flex justify-end mb-6 mt-8">
             <v-btn 
                 v-if="isAdmin"
@@ -15,19 +9,18 @@
                 {{ $t("addServer") }}
             </v-btn>
         </div>
-        <v-dialog v-model="dialogImport" max-width="500">
-            <v-card
-                class = "px-2 py-4"
-                :text="$t('importMsg')">
-                <v-file-input
-                    v-model="selectedFile"
-                    accept=".xlsx,.xls"
-                    label="Select Excel file"
-                    clearable/>
-                <template #actions>    
+        <!-- <v-dialog v-model="dialogImport" max-width="500">
+            <v-card class="px-4 py-4" :text="$t('importMsg')">
+                <div
+                    id="my-dropzone" 
+                    class="dropzone border border-dashed rounded-lg pa-6 text-center d-flex flex-column align-center justify-center">
+                    <v-icon size="40" class="mt-6">
+                        mdi-cloud-upload
+                    </v-icon>
+                </div>
+                <template #actions>
                     <v-spacer />
-                    <v-btn
-                        @click="dialogImport = false">
+                    <v-btn @click="dialogImport = false">
                         {{ $t('cancel') }}
                     </v-btn>
                     <v-btn
@@ -38,11 +31,11 @@
                     </v-btn>
                 </template>
             </v-card>
-        </v-dialog>
+        </v-dialog> -->
         <v-dialog v-model="dialogExport" max-width="500">
             <v-card
                 prepend-icon="mdi-export"
-                class = "px-2 py-4"
+                class = "px-4 py-4"
                 :text="$t('exportMsg')">
                 <template #actions>
                     <v-spacer />
@@ -61,7 +54,7 @@
         <v-dialog v-model="dialogPDFExport" max-width="500">
             <v-card
                 prepend-icon="mdi-export"
-                class = "px-2 py-4"
+                class = "px-4 py-4"
                 :text="$t('exportPdfMsg')">
                 <template #actions>
                     <v-spacer />
@@ -80,12 +73,10 @@
         <add-edit-server
             :model-server-value="formServer"
             @save-server="handleSaveServer"
-            @cancel-server="formServer = null"
-        />
+            @cancel-server="formServer = null"/>
         <view-server-info
             :model-server-value="infoServer"
-            @close-server="infoServer = null"
-        />
+            @close-server="infoServer = null"/>
         <div class="mb-4 d-flex align-center">
             <v-btn 
                 prepend-icon="mdi-filter-outline"
@@ -99,13 +90,6 @@
                     :label="$t('search')" 
                     v-model="search" />
             </div>
-            <!-- <v-btn 
-                v-if="isAdmin"
-                prepend-icon="mdi-plus"
-                class="py-7 ml-8 d-flex justify-center bg-surface-variant" 
-                @click="openAddServer">
-                {{ $t("addServer") }}
-            </v-btn> -->
         </div>
         <div v-if="!filterMenu" class="d-flex align-center justify-end mb-4 w-50">
             <v-select
@@ -125,43 +109,35 @@
                 { value: 'inactive', title: $t('inactive') },]"/>
         </div>
         <div
-                v-if="isAdmin"
-                class="my-6 d-flex justify-end align-center">
-                <div
-                    class="d-flex align-center ml-4">
-                    {{$t('importFrom')}}
-                </div>
-                <div>
-                    <v-btn
-                        class="ml-4"
-                        @click="openImportServers">
-                        {{ $t('exportExcel') }}
-                    </v-btn>
-                </div>
-                <div
-                    class="d-flex align-center ml-4">
-                    {{$t('exportTo')}}
-                </div>
-                <div>
-                    <v-btn
-                        class="ml-4"
-                        @click="openExportServers">
-                        {{ $t('exportExcel') }}
-                    </v-btn>
-                    <v-btn
-                        class="ml-4"
-                        @click="openExportServersPDF">
-                        {{ $t('exportPDF') }}
-                    </v-btn>
-                </div>
-            <!-- </div> -->
-            <!-- <v-select
-                class="ml-4"
-                :text="$t('export')"
-                :items="[
-                    { title: $t('exportExcel'), action: openExportServers },
-                    { title: $t('exportPDF'), action: openExportServersPDF },
-                ]"/> -->
+            v-if="isAdmin"
+            class="my-6 d-flex justify-end align-center">
+            <!-- <div
+                class="d-flex align-center ml-4">
+                {{$t('importFrom')}}
+            </div> -->
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openImportServers">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+            </div>
+            <div
+                class="d-flex align-center ml-4">
+                {{$t('exportTo')}}
+            </div>
+            <div>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportServers">
+                    {{ $t('exportExcel') }}
+                </v-btn>
+                <v-btn
+                    class="ml-4"
+                    @click="openExportServersPDF">
+                    {{ $t('exportPDF') }}
+                </v-btn>
+            </div>
         </div>
         <v-data-table-server
             class="rounded-lg"
@@ -235,10 +211,12 @@
 import { useServers } from '~/composable/useServers';
 import AddEditServer from '~/components/AddEditServer.vue';
 import headersNames from '../assets/data/headers.json';
+import Dropzone from "dropzone";
+import "dropzone/dist/dropzone.css";
 
     const { locale } = useI18n();
     
-    const { addServer, removeServer, updateServer, paginationServer, getExportServers, getExportServersPDF, importServers } =  useServers();    
+    const { addServer, removeServer, updateServer, paginationServer, exportXlsx, exportPdf } =  useServers();    
     const { data } = useAuth()
     const page = ref(1)
     const itemsPerPage = ref(10);
@@ -278,7 +256,7 @@ import headersNames from '../assets/data/headers.json';
 
     const dialogPDFExport = ref(false)
 
-    const dialogImport = ref(false)
+    // const dialogImport = ref(false)
 
     const formServer = ref(null)
 
@@ -288,20 +266,12 @@ import headersNames from '../assets/data/headers.json';
     
     const selectedFile = ref(null)
     
-    const confirmImport = async () => {
-        if (!selectedFile.value) return
+    // const confirmImport = async () => {
+    //     if (!selectedFile.value) return;
 
-        try {
-            await importServers(selectedFile.value)
-            await reloadPage()
-            dialogImport.value = false
-        } catch (e) {
-            console.error('Import failed', e)
-        } finally {
-            selectedFile.value = null
-        }
-    }
-        
+    //     dz.processQueue();
+    // };
+
     const openAddServer = () => {
         formServer.value = reactive({
             id: null,
@@ -347,9 +317,9 @@ import headersNames from '../assets/data/headers.json';
         dialogPDFExport.value = true
     }
 
-    const openImportServers = () => {
-        dialogImport.value = true
-    }
+    // const openImportServers = () => {
+    //     dialogImport.value = true
+    // }
 
     const confirmDelete = async () => {
         if (!serverToDelete.value) return
@@ -362,12 +332,12 @@ import headersNames from '../assets/data/headers.json';
     }
 
     const confirmPDFExportServers = async () => {
-        await getExportServersPDF()
+        await exportPdf()
         dialogPDFExport.value = false
     }
 
     const confirmExportServers = async () => {
-        await getExportServers()
+        await exportXlsx()
         dialogExport.value = false
     }
 
@@ -389,6 +359,46 @@ import headersNames from '../assets/data/headers.json';
             await reloadPage();
             formServer.value = null;
     }
+
+    // Dropzone.autoDiscover = false;
+
+    // let dz = null;
+
+    // watch(dialogImport, async (isOpen) => {
+    //     if (isOpen) {
+    //         await nextTick();
+
+    //         if (dz) {
+    //             dz.destroy();
+    //         }
+
+    //         dz = new Dropzone("#my-dropzone", {
+    //             url: "/api/Server/import",
+    //             paramName: "file",      
+    //             acceptedFiles: ".xlsx,.xls",
+    //             maxFiles: 1,
+    //             dictDefaultMessage: $t('selectExcelFile'),   
+    //             autoProcessQueue: false,
+    //             // headers: {
+    //             //         Authorization: `Bearer ${useAuth().data.value?.token}`
+    //             //     }
+    //         });
+                
+    //         dz.on("addedfile", (file) => {
+    //             selectedFile.value = file;
+    //         });
+            
+    //         dz.on("success", async () => {
+    //             await reloadPage();
+    //             dialogImport.value = false;
+    //             dz.removeAllFiles();
+    //         });
+
+    //         dz.on("removedfile", () => {
+    //             selectedFile.value = null;
+    //         });
+    //     }
+    // });
 
     watch(
         [page, resolvedPageSize],

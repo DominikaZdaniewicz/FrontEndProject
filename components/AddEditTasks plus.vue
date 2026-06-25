@@ -92,29 +92,6 @@ import { useUsers } from '~/composable/useUsers';
     const serverError = ref('')
     const isInitializing = ref(false)
 
-    // onMounted(async () => {
-    //     await getOwners()
-    //     await getServersBasic()
-    //     await getApplicationsBasic()
-    // })
-
-    // watch(() => props.modelTaskValue,
-    //     async (val) => {
-    //         if (!val) {
-    //             localTask.value = { ...emptyTask }
-    //             return
-    //         }
-
-    //         if (val.id) {
-    //             const fullTask = await getTaskEdit(val.id)
-    //             localTask.value = { ...emptyTask, ...fullTask }
-    //         } else {
-    //             localTask.value = { ...emptyTask }
-    //         }
-    //     },
-    //     { immediate: true }
-    // )
-
      watch(
         () => props.modelTaskValue,
         async (val) => {

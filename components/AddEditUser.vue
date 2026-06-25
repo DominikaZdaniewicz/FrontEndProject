@@ -56,7 +56,6 @@
 </template>
 
 <script setup>
-// import { useUsers } from '~/composable/useUsers';
     const localPath = useLocalePath();
 
     const props = defineProps({
@@ -158,12 +157,7 @@
             emailError.value = [$t('emailError')];
             return 
         }
-        // const payload = {
-        //     ...localUser.value,
-        //     roles: localUser.value.roles?.length ? localUser.value.roles : ['user']
-        // }
 
-        
         let roles = localUser.value.roles
 
         if (!roles || roles.length === 0) {

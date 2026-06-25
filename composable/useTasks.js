@@ -70,11 +70,6 @@ export function useTasks() {
     }
 
     async function getTasksBasic() {
-        const data = await $fetch('/api/Task/basic')
-        return ref(data)
-    }
-
-    async function getTasksBasic() {
         const res = await $fetch('/api/Task/basic')
 
         basicTaskData.value = Array.isArray(res)
@@ -86,68 +81,96 @@ export function useTasks() {
         return await $fetch(`/api/Task/${id}`)
     }
 
-    async function getExportTasks() {
-        const blob = await $fetch('/api/Task/export', {
-            responseType: 'blob'
-        })
+    async function exportXlsx() {
+        const data = await fetch("api/Task/export-xlsx", {
+            method: "POST"
+        });
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Tasks.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+        waitForFileGeneric(`/api/Task/download-xlsx/${data.fileName}`, data.fileName );
+    };
 
-        window.URL.revokeObjectURL(url)
+    async function exportBasicXlsx() {
+        const data = await fetch("api/Task/export-basic-xlsx", {
+            method: "POST"
+        });
+
+        waitForFileGeneric(`/api/Task/download-basic-xlsx/${data.fileName}`, data.fileName );
+    };
+
+
+    async function exportPdf() {
+        const data = await fetch("api/Task/export-pdf", {
+            method: "POST"
+        });
+
+        waitForFileGeneric(`/api/Task/download-pdf/${data.fileName}`, data.fileName );
+    };
+
+    function waitForFileGeneric(url, fileName) {
+        let attempts = 0;
+        const maxAttempts = 30;
+
+        const interval = setInterval(async () => {
+            attempts++;
+
+            const res = await fetch(url);
+
+            if (res.status === 200) {
+                clearInterval(interval);
+
+                const blob = await res.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                window.URL.revokeObjectURL(downloadUrl);
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error("Timeout waiting for file:", fileName);
+            }
+
+        }, 2000);
     }
 
-    async function getExportBasicTasks() {
-        const blob = await $fetch('/api/Task/exportBasic', {
-            responseType: 'blob'
+    // async function importTasks(file) {
+    //     if (!file) return
+
+    //     const formData = new FormData()
+    //     formData.append('file', file)
+
+    //     const response = await $fetch('/api/ImportData/internal/Main', {
+    //         method: 'POST',
+    //         body: formData
+    //     })
+
+    //     return response
+    // }
+
+    async function getImportRawData(importId, options = {}) {
+        const response = await $fetch(`/api/ImportData/${importId}/rawData`, {
+            method: "POST",
+            body: {
+            page: options.page || 1,
+            pageSize: options.pageSize || 10,
+            filter: {
+                phrase: options.phrase || ""
+            }
+            }
         })
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'TasksBasic.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-
-        window.URL.revokeObjectURL(url)
-    }
-
-    async function getExportTasksPDF() {
-        const blob = await $fetch('/api/Task/exportPDF', {
-            responseType: 'blob'
-        })
-
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Tasks.pdf'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
-
-        window.URL.revokeObjectURL(url)
-    }
-
-    async function importTasks(file) {
-        if (!file) return
-
-        const formData = new FormData()
-        formData.append('file', file)
-
-        await $fetch('/api/Task/import', {
-            method: 'POST',
-            body: formData
-        })
+        return response
     }
 
     return {
         backendTasks,
+        basicTaskData, 
         getTasks,
         addTask,
         removeTask,
@@ -155,11 +178,12 @@ export function useTasks() {
         paginationTask,
         paginationBasicTask,
         getTasksBasic,
-        basicTaskData,
         getTaskEdit,
-        getExportTasks,
-        getExportBasicTasks,
-        getExportTasksPDF,
-        importTasks
+        exportXlsx,
+        exportBasicXlsx,
+        exportPdf,
+        waitForFileGeneric,
+        getImportRawData,
+        // importTasks
     }
 }

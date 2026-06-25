@@ -88,68 +88,80 @@ export  function useServers() {
         return await $fetch(`/api/Server/${id}`)
     }
 
-    async function getExportServers() {
-        const blob = await $fetch('/api/Server/export', {
-            responseType: 'blob'
-        })
+    async function exportBasicXlsx() {
+        const data = await $fetch('/api/Server/export-basic-xlsx', {
+            method: 'POST'
+        });
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Servers.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+        waitForFileGeneric(`/api/Server/download-basic-xlsx/${data.fileName}`, data.fileName );
+    }
+    
+    async function exportXlsx() {
+        const data = await $fetch('/api/Server/export-xlsx', {
+            method: 'POST'
+        });
 
-        window.URL.revokeObjectURL(url)
+        waitForFileGeneric(`/api/Server/download-xlsx/${data.fileName}`, data.fileName );
+    }
+        
+    async function exportPdf() {
+        const data = await $fetch('/api/Server/export-pdf', {
+            method: 'POST'
+        });
+
+        waitForFileGeneric(
+            `/api/Server/download-pdf/${data.fileName}`,
+            data.fileName
+        );
     }
 
-    async function getExportBasicServers() {
-        const blob = await $fetch('/api/Server/exportBasic', {
-            responseType: 'blob'
-        })
+    function waitForFileGeneric(url, fileName) {
+        let attempts = 0;
+        const maxAttempts = 30;
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'ServersBasic.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+        const interval = setInterval(async () => {
+            attempts++;
 
-        window.URL.revokeObjectURL(url)
+            const res = await fetch(url);
+
+            if (res.status === 200) {
+                clearInterval(interval);
+
+                const blob = await res.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                window.URL.revokeObjectURL(downloadUrl);
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error("Timeout waiting for file:", fileName);
+            }
+
+        }, 2000);
     }
 
-    async function getExportServersPDF() {
-        const blob = await $fetch('/api/Server/exportPDF', {
-            responseType: 'blob'
-        })
+    // async function importServers(file) {
+    //     if (!file) return
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Servers.pdf'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+    //     const formData = new FormData()
+    //     formData.append('file', file)
 
-        window.URL.revokeObjectURL(url)
-    }
-
-    async function importServers(file) {
-        if (!file) return
-
-        const formData = new FormData()
-        formData.append('file', file)
-
-        await $fetch('/api/Server/import', {
-            method: 'POST',
-            body: formData
-        })
-    }
-
+    //     await $fetch('/api/Server/import', {
+    //         method: 'POST',
+    //         body: formData
+    //     })
+    // }
 
     return {
+        basicServerData,
         getServers,
         addServer,
         removeServer,
@@ -158,12 +170,12 @@ export  function useServers() {
         paginationBasicServer,
         getServersSummary,
         getServerDetails,
-        getServersBasic,
-        basicServerData,
+        getServersBasic,  
         getServerEdit,
-        getExportServers,
-        getExportBasicServers,
-        getExportServersPDF,
-        importServers
+        exportBasicXlsx,
+        exportXlsx,
+        exportPdf,
+        waitForFileGeneric,
+        // importServers        
     }
 }

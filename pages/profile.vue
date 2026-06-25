@@ -254,29 +254,6 @@ import { useEmails } from '~/composable/useEmails';
         }
     };
 
-    // watch(
-    // () => props.modelUserValue,
-    //     async (user) => {
-    //         console.log("USER:", user);
-
-    //         if (!user?.email) {
-    //         console.log("BRAK EMAILA");
-    //         return;
-    //         }
-
-    //         console.log("EMAIL:", user.email);
-
-    //         const inbox = await getEmailToUser(user.email);
-    //         const outbox = await getEmailFromUser(user.email);
-
-    //         console.log("INBOX:", inbox);
-
-    //         inboxEmails.value = inbox;
-    //         outboxEmails.value = outbox;
-    //     },
-    //     { immediate: true }
-    // );
-
     watch(
         () => data.value,
         async (user) => {
@@ -298,25 +275,6 @@ import { useEmails } from '~/composable/useEmails';
         },
         { immediate: true }
     );
-
-    // watch(
-    //     () => props.modelUserValue,
-    //     (val) => {
-    //         if (val) {
-    //         currentUser.value = { ...val };
-    //         }
-    //     },
-    //     { immediate: true }
-    // );
-
-    // watch(
-    //     () => currentUser.value.username,
-    //     (newVal) => {
-    //         if (newVal?.trim()) {
-    //             usernameError.value = ''
-    //         }
-    //     }
-    // )
 
     watch(oldPassword, (val) => {
         if (val?.trim()) oldPasswordError.value = ''

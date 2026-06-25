@@ -27,10 +27,6 @@
 <script setup>
     const localPath = useLocalePath();
 
-    // definePageMeta({
-    //     layout: "start"
-    // })
-
 </script>
 
 <style scoped>

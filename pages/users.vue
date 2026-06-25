@@ -40,10 +40,6 @@
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('users') }}</h2>
             <div class="d-flex justify-end mb-6 mt-8">    
-                <!-- <v-btn
-                    @click="openExportUsers">
-                    {{ $t('export') }}
-                </v-btn> -->
                 <v-btn 
                     prepend-icon="mdi-plus"
                     class="ml-8 bg-surface-variant" 
@@ -91,17 +87,6 @@
         <div
             v-if="isAdmin"
             class="my-6 d-flex justify-end align-center">
-            <!-- <div
-                class="d-flex align-center ml-4">
-                {{$t('importFrom')}}
-            </div>
-            <div>
-                <v-btn
-                    class="ml-4"
-                    @click="openImportServers">
-                    {{ $t('exportExcel') }}
-                </v-btn>
-            </div> -->
             <div
                 class="d-flex align-center ml-4">
                 {{$t('exportTo')}}
@@ -134,21 +119,6 @@
             </template>
             <template #item.actions="{ item }">
                 <div class="d-flex justify-end align-center">
-                <!-- <v-btn
-                    v-if="item.email"
-                    icon="mdi-email-outline"
-                    @click="openEmailUser(item)"
-                    size="30"
-                    flat
-                    class="bg-surface-variant mr-2"/>
-                <v-btn
-                    v-else
-                    icon="mdi-email-outline"
-                    @click="openEmailUser(item)"
-                    size="30"
-                    flat
-                    class="bg-surface-variant mr-2"
-                    disabled/> -->
                 <v-btn
                     icon="mdi-pencil"
                     @click="openEditUser(item)"
@@ -185,7 +155,7 @@ import { useI18n } from 'vue-i18n';
 import { useEmails } from '~/composable/useEmails';
 
     const { data } = useAuth();
-    const { addUser, updateUser, paginationUser, removeUser, getExportUsers, getExportUsersPDF } = useUsers();
+    const { addUser, updateUser, paginationUser, removeUser, exportXlsx, exportPdf } = useUsers();
 
     const { t } = useI18n();
 
@@ -237,10 +207,6 @@ import { useEmails } from '~/composable/useEmails';
     })
 
     const itemsPerPageOptions = computed(() => [{ value: 10, title: 10 }, { value: 20, title: 20 }, { value: totalItems.value, title: $t('all') }]);
-
-    // const reloadPage = async () => {
-    //     pagination.value = await paginationUser(page.value, resolvedPageSize.value, search.value, filterIsAdmin.value, sortBy.value)
-    // }
 
     const reloadPage = async () => {
         const response = await paginationUser(
@@ -304,7 +270,7 @@ import { useEmails } from '~/composable/useEmails';
     }
 
     const confirmExportUsers = async () => {
-        await getExportUsers()
+        await exportXlsx()
         dialogExport.value = false
     }
 
@@ -313,7 +279,7 @@ import { useEmails } from '~/composable/useEmails';
     }
 
     const confirmExportUsersPDF = async () => {
-        await getExportUsersPDF()
+        await exportPdf()
         dialogExportPDF.value = false
     }
 

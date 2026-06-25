@@ -1,31 +1,12 @@
 <template>
     <v-form @submit.prevent="resetPassword" 
         class="btn">
-        <!-- <h4 class="mb-2 text-uppercase d-flex flex-column align-center">{{ $t('forgotPassword') }}</h4> -->
         <a class="mb-8 d-flex flex-column align-center">{{ $t("forgotPasswordMsg") }}</a>
         <v-text-field
             v-model="email"
             :label="$t('email')"
             hide-details
             class="field"/>
-        <!-- <v-text-field
-            v-model="password"
-            :label="$t('newPassword')"
-            type="password"
-            name="password"
-            autocomplete="new-password"
-            autocorrect="off"
-            hide-details
-            class="field"/>
-        <v-text-field
-            v-model="confirmPassword"
-            :label="$t('confirmPassword')"
-            type="password"
-            name="confirmPassword"
-            autocomplete="new-password"
-            autocorrect="off"
-            hide-details
-            class="field"/> -->
         <div
             class="mt-8 d-flex justify-center">
             <v-btn 
@@ -61,17 +42,6 @@
             console.error("RESET PASSWORD ERROR:", err)
         }
     }
-
-    // const login = async () => {
-    //     try {
-    //         await signIn({
-    //             username: email.value,
-    //             password: password.value
-    //         })
-    //     } catch (err) {
-    //         console.error("LOGIN ERROR:", err)
-    //     }
-    // }
         
     watch(status, async (val) => {
         if (val === 'authenticated') {

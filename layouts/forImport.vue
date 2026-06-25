@@ -37,7 +37,7 @@
     </v-app-bar>
     <v-main>
         <v-container
-            class="w-66 my-2">
+            class="w-80% my-2">
             <div class="d-flex align-center justify-space-between mb-4">
                 <v-tabs
                     class="d-flex align-center">

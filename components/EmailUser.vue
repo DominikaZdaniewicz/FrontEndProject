@@ -80,16 +80,6 @@ import { useUsers } from '~/composable/useUsers';
 
     const isEditing = computed(() => !!props.modelUserValue?.id)
 
-    // const emptyUser = {
-    //     id: '',
-    //     userName: '',
-    //     firstName: '',
-    //     lastName: '',
-    //     email: '',
-    //     phoneNumber: '',
-    //     roles: []
-    // }
-
     const roles = [
         { name: 'Administrator', value: 'administrator' },
         { name: 'User', value: 'user' }
@@ -137,28 +127,6 @@ import { useUsers } from '~/composable/useUsers';
         }
     };
 
-    // const sendEmail = () => {
-    //     if (!emailSubject.value?.trim()) {
-    //         // emailSubjectError.value = [$t('emailSubjectError')];
-    //         return 
-    //     }
-    //     if (!emailBody.value?.trim()) {
-    //         // emailBodyError.value = [$t('emailBodyError')];
-    //         return 
-    //     }
-
-    //     const payload = {
-    //         userId: localUser.value.id,
-    //         subject: emailSubject.value,
-    //         body: emailBody.value
-    //     }
-
-    //     // emit('save-user', payload)
-    //     sendEmailDialog.value = false;
-    //     emailBody.value = ''
-    //     emailSubject.value = '' 
-    // }
-
     watch(
         () => props.modelUserValue,
         (val) => {
@@ -176,28 +144,6 @@ import { useUsers } from '~/composable/useUsers';
         { immediate: true }
     )
 
-
-    // watch(
-    //     () => props.modelUserValue,
-    //     async (val) => {
-                        
-    //         if (val === null) {
-    //             dialogOpenEmailUsers.value = false
-    //             localUser.value = { ...emptyUser }
-    //             return
-    //         }
-
-    //         dialogOpenEmailUsers.value = !!val;
-   
-    //         if (val?.id) {
-    //             localUser.value = { ...emptyUser, ...val }
-    //         } else {
-    //             localUser.value = { ...emptyUser }
-    //         }
-    //     },
-    //     { immediate: true }
-    // )
-    
     watch(
         () => localUser.value.userName,
         (newVal) => {

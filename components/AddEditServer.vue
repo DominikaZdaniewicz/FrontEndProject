@@ -42,11 +42,9 @@
 </template>
 
 <script setup>
-// import { useOwners } from '~/composable/useOwners';
 import { useUsers } from '~/composable/useUsers';
 import { useServers } from '~/composable/useServers';
 
-    // const { owners, getOwners } = useOwners()
     const { getServerEdit } = useServers()
     const { backendUsers, getUsers } = useUsers()
 

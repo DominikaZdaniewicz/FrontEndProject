@@ -23,16 +23,7 @@
                     variant="plain"
                     v-model="serverDetails.ownerName"
                     :label="$t('owner')"
-                ></v-text-field>
-                <!-- <v-select 
-                    readonly
-                    variant="plain"
-                    v-model="serverDetails.ownerId"
-                    :items="owners"
-                    item-title="name"
-                    item-value="id"
-                    :label="$t('owner')"
-                ></v-select> -->             
+                ></v-text-field>             
                 <v-text-field
                     readonly
                     variant="plain"

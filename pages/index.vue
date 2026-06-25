@@ -6,11 +6,6 @@
             :to="localPath('/auth/login')">
             {{ $t("signInBtn") }}
         </v-btn>
-        <!-- <v-btn 
-            class="w-25 mx-2 my-2"
-            :to="localPath('/auth/register')">
-            {{ $t("signUpBtn") }}
-        </v-btn> -->
         <a 
             href="/auth/register"
             class="link">

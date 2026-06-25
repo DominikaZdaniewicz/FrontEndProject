@@ -53,11 +53,9 @@
 
 <script setup>
 import { useApplications } from '~/composable/useApplications';
-// import { useOwners } from '~/composable/useOwners';
 import { useServers } from '~/composable/useServers';
 import { useUsers } from '~/composable/useUsers';
 
-    // const { owners, getOwners } = useOwners() 
     const { getApplicationEdit } = useApplications()
     const { basicServerData, getServersBasic } = useServers()
     const { backendUsers, getUsers } = useUsers()

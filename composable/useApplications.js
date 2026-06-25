@@ -90,68 +90,79 @@ export function useApplications() {
         return await $fetch(`/api/Application/${id}`)
     }
 
-    async function getExportApplications() {
-        const blob = await $fetch('/api/Application/export', {
-            responseType: 'blob'
-        })
+    async function exportBasicXlsx() {
+        const data = await fetch("/api/Application/export-basic-xlsx", {
+            method: 'POST'
+        });
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Applications.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+        waitForFileGeneric(`/api/Application/download-basic-xlsx/${data.fileName}`, data.fileName );
+    };
 
-        window.URL.revokeObjectURL(url)
+    async function exportXlsx() {
+        const data = await fetch("/api/Application/export-xlsx", {
+            method: 'POST'
+        });
+
+        waitForFileGeneric(`/api/Application/download-xlsx/${data.fileName}`, data.fileName );
+    };
+
+    async function exportPdf() {
+        const data = await fetch("/api/Application/export-pdf", {
+            method: 'POST'
+        });
+
+        waitForFileGeneric(`/api/Application/download-pdf/${data.fileName}`, data.fileName );
     }
 
-    async function getExportBasicApplications() {
-        const blob = await $fetch('/api/Application/exportBasic', {
-            responseType: 'blob'
-        })
+    function waitForFileGeneric(url, fileName) {
+        let attempts = 0;
+        const maxAttempts = 30;
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'ApplicationsBasic.xlsx'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+        const interval = setInterval(async () => {
+            attempts++;
 
-        window.URL.revokeObjectURL(url)
+            const res = await fetch(url);
+
+            if (res.status === 200) {
+                clearInterval(interval);
+
+                const blob = await res.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+
+                const a = document.createElement("a");
+                a.href = downloadUrl;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+
+                window.URL.revokeObjectURL(downloadUrl);
+            }
+
+            if (attempts >= maxAttempts) {
+                clearInterval(interval);
+                console.error("Timeout waiting for file:", fileName);
+            }
+
+        }, 2000);
     }
 
-    async function getExportApplicationsPDF() {
-        const blob = await $fetch('/api/Application/exportPDF', {
-            responseType: 'blob'
-        })
+    // async function importApplications(file) {
+    //     if (!file) return
 
-        const url = window.URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = 'Applications.pdf'
-        document.body.appendChild(a)
-        a.click()
-        a.remove()
+    //     const formData = new FormData()
+    //     formData.append('file', file)
 
-        window.URL.revokeObjectURL(url)
-    }
-
-    async function importApplications(file) {
-        if (!file) return
-
-        const formData = new FormData()
-        formData.append('file', file)
-
-        await $fetch('/api/Application/import', {
-            method: 'POST',
-            body: formData
-        })
-    }
+    //     await $fetch('/api/Application/import', {
+    //         method: 'POST',
+    //         body: formData
+    //     })
+    // }
 
     return {
         backendApplications,
+        basicApplicationData,
+        basicApplicationToTaskData,
         getApplications,
         addApplication,
         removeApplications,
@@ -160,13 +171,12 @@ export function useApplications() {
         paginationBasicApplication,
         getApplicationDetails,
         getApplicationsBasic,
-        basicApplicationData,
-        getApplicationEdit,
         getApplicationsToTask,
-        basicApplicationToTaskData,
-        getExportApplications,
-        getExportBasicApplications,
-        getExportApplicationsPDF,
-        importApplications
+        getApplicationEdit,
+        exportBasicXlsx,
+        exportXlsx,
+        exportPdf,
+        waitForFileGeneric,
+        // importApplications
     }
 }

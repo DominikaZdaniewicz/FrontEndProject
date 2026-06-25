@@ -97,13 +97,6 @@ import { useTasks } from '~/composable/useTasks';
         isActive: true
     }
 
-    // const availableApplications =  computed(() => {
-    //     if (!localTask.value?.serverId) {
-    //         return basicApplicationData.value
-    //     };
-    //     return basicApplicationToTaskData.value?.filter(a => a.serverId === localTask.value.serverId) ?? []
-    // })
-
     const availableApplications = computed(() => {
         if (!localTask.value?.serverId) {
             return basicApplicationData.value ?? []
