@@ -3,6 +3,13 @@
         <div class="mt-8">
             <search-bar :label="$t('search')" v-model="search" />
         </div>
+        <div class="d-flex align-center justify-end mb-6 mt-8">
+            <v-btn 
+                class="bg-surface-variant"
+                :to="localPath('/charts')">
+                {{ $t("charts") }}
+            </v-btn>
+        </div>
         <div class="d-flex align-center justify-space-between mb-6 mt-8">
             <h2 class="text-h5">{{ $t('serversBtn') }}</h2>
             <v-btn
@@ -118,6 +125,8 @@
 import { useServers } from '~/composable/useServers';
 import { useApplications } from '~/composable/useApplications';
 import { useTasks } from '~/composable/useTasks';
+
+    const localPath = useLocalePath();
 
     const { paginationBasicApplication, exportBasicXlsx: exportBasicApplication } = useApplications();
     const { paginationBasicTask, exportBasicXlsx: exportBasicTask } = useTasks();

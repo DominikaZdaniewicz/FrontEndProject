@@ -124,6 +124,11 @@
                     @click="openEditUser(item)"
                     size="40"
                     flat/>
+                <v-btn
+                    icon="mdi-sms"
+                    @click="openSendMessageDialog(item)"
+                    size="40"
+                    flat/>
                 <v-dialog v-model="dialogDelete" max-width="500">
                     <template #activator="{ props }">
                         <v-btn

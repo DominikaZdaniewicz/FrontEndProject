@@ -3,6 +3,7 @@ import * as components from 'vuetify/components';
 import * as directives from 'vuetify/directives';
 import 'vuetify/styles';
 import { en, pl } from "vuetify/locale";
+import VueApexCharts from 'vue3-apexcharts';
 
 export default defineNuxtPlugin((nuxtApp) => {
     const vuetify = createVuetify({
@@ -17,6 +18,7 @@ export default defineNuxtPlugin((nuxtApp) => {
         components,
         directives
     })
+    nuxtApp.vueApp.use(VueApexCharts)
     nuxtApp.vueApp.use(vuetify)
     return {
         provide: {

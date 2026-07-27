@@ -1,6 +1,7 @@
 <template>
     <v-form @submit.prevent="login" 
-        class="btn">
+        class="btn"
+        :to="localPath('/servers')">
         <h4 class="mb-4 text-uppercase d-flex flex-column align-center">{{ $t('login') }}</h4>
         <a v-if="errorMsg" class="text-red mb-4 text-uppercase">{{ $t('loginFailed') }}</a>
         <v-text-field

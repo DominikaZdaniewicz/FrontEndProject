@@ -46,6 +46,8 @@
                     <v-btn variant="text" :to="localPath('/tasks')">{{ $t("tasksBtn") }}</v-btn>
                     <v-btn variant="text" :to="localPath('/basicInfo')" cliked = false>{{ $t("basicInfo") }}</v-btn>
                     <v-btn variant="text" :to="localPath('/imports')" cliked = false>{{ $t("imports") }}</v-btn>
+                    <v-btn variant="text" :to="localPath('/services')" cliked = false>{{ $t("services") }}</v-btn>
+                    <v-btn variant="text" :to="localPath('/pdfpreview')" cliked = false>{{ $t("pdfPreview") }}</v-btn>
                 </v-tabs>
                 <div>
                     <v-btn
